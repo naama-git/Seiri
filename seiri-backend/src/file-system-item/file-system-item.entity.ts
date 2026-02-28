@@ -1,5 +1,5 @@
-import { FileMetadata } from 'src/file/file.entity';
-import { User } from 'src/user/user.entity';
+import { FileMetadata } from '../file/file.entity';
+import { User } from '../user/user.entity';
 import {
   Column,
   CreateDateColumn,

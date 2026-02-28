@@ -1,4 +1,4 @@
-import { FileSystemItem } from 'src/file-system-item/file-system-item.entity';
+import { FileSystemItem } from '../file-system-item/file-system-item.entity';
 import {
   Column,
   Entity,
