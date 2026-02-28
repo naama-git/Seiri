@@ -1,5 +1,14 @@
 import { FileSystemItem } from 'src/file-system-item/file-system-item.entity';
-import { Entity, Column, PrimaryGeneratedColumn, OneToMany, OneToOne, JoinColumn, DeleteDateColumn, CreateDateColumn, UpdateDateColumn } from 'typeorm';
+import {
+  Entity,
+  Column,
+  PrimaryGeneratedColumn,
+  OneToMany,
+  OneToOne,
+  JoinColumn,
+  DeleteDateColumn,
+  CreateDateColumn,
+} from 'typeorm';
 
 @Entity('users')
 export class User {
@@ -9,7 +18,7 @@ export class User {
   @Column({ nullable: false, length: 100 })
   name: string;
 
-  @Column({ nullable: false, length: 50 })
+  @Column({ nullable: false, length: 50, select: false })
   password: string;
 
   @Column({ nullable: false, unique: true })
@@ -21,24 +30,16 @@ export class User {
   @Column({ nullable: false, default: true })
   isActive: boolean;
 
-  
-  @OneToOne(() => FileSystemItem)
+  @OneToOne(() => FileSystemItem, { cascade: true })
   @JoinColumn({ name: 'root_folder_id' })
   rootFolder: FileSystemItem;
 
   @OneToMany(() => FileSystemItem, (item) => item.owner)
   items: FileSystemItem[];
 
-
   @CreateDateColumn()
   created_at: Date;
-  
-  @UpdateDateColumn()
-   updated_at: Date;
-  
-  @DeleteDateColumn() 
-  deleted_at: Date;
 
- 
-  
+  @DeleteDateColumn()
+  deleted_at: Date;
 }

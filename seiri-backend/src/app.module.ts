@@ -5,6 +5,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthModule } from './auth/auth.module';
 import { FileSystemItemModule } from './file-system-item/file-system-item.module';
+import { FileModule } from './file/file.module';
 
 
 
@@ -29,6 +30,7 @@ import { FileSystemItemModule } from './file-system-item/file-system-item.module
     }),
     AuthModule,
     FileSystemItemModule,
+    FileModule,
    
   ],
   controllers: [AppController],

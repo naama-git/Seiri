@@ -49,9 +49,13 @@ export default tseslint.config(
           },
          
           {
-            selector: ['variable', 'EnumMember'],
+            selector: ['variable'],
             modifiers: ['const'],
             format: ['camelCase', 'UPPER_CASE'],
+          },
+          {
+           selector: 'property',
+           format: ['camelCase', 'snake_case'],
           },
         ],
       },

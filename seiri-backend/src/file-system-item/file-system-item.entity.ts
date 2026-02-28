@@ -1,16 +1,29 @@
+import { FileMetadata } from 'src/file/file.entity';
 import { User } from 'src/user/user.entity';
-import { Column, CreateDateColumn, DeleteDateColumn, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn, Tree, TreeChildren, TreeParent, UpdateDateColumn } from 'typeorm';
-
+import {
+  Column,
+  CreateDateColumn,
+  DeleteDateColumn,
+  Entity,
+  JoinColumn,
+  ManyToOne,
+  OneToOne,
+  PrimaryGeneratedColumn,
+  Tree,
+  TreeChildren,
+  TreeParent,
+  UpdateDateColumn,
+} from 'typeorm';
 
 export enum ItemType {
+  // eslint-disable-next-line @typescript-eslint/naming-convention
   FILE = 'file',
+  // eslint-disable-next-line @typescript-eslint/naming-convention
   FOLDER = 'folder',
 }
 
-
 @Entity('file_system_items')
 @Tree('materialized-path')
-
 export class FileSystemItem {
   @PrimaryGeneratedColumn('uuid')
   id: number;
@@ -18,7 +31,12 @@ export class FileSystemItem {
   @Column({ nullable: false })
   name: string;
 
-  @Column({ nullable: false, type: 'enum', enum: ItemType,default: ItemType.FILE, })
+  @Column({
+    nullable: false,
+    type: 'enum',
+    enum: ItemType,
+    default: ItemType.FILE,
+  })
   type: ItemType;
 
   @Column({ type: 'jsonb', nullable: true, default: {} })
@@ -35,6 +53,8 @@ export class FileSystemItem {
   @TreeChildren()
   children: FileSystemItem[];
 
+  @OneToOne(() => FileMetadata, (metadata) => metadata.item, { cascade: true })
+  metadata: FileMetadata;
 
   @CreateDateColumn()
   created_at: Date;
@@ -42,10 +62,6 @@ export class FileSystemItem {
   @UpdateDateColumn()
   updated_at: Date;
 
-  @DeleteDateColumn() 
+  @DeleteDateColumn()
   deleted_at: Date;
-
-
-  
-
 }
