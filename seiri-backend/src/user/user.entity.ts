@@ -27,9 +27,6 @@ export class User {
   @Column({ nullable: false })
   role: 'Admin' | 'User';
 
-  @Column({ nullable: false, default: true })
-  isActive: boolean;
-
   @OneToOne(() => FileSystemItem, { cascade: true })
   @JoinColumn({ name: 'root_folder_id' })
   rootFolder: FileSystemItem;

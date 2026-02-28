@@ -7,7 +7,7 @@ import {
   PrimaryGeneratedColumn,
 } from 'typeorm';
 
-@Entity('fileMetadata')
+@Entity('file-metadata')
 export class FileMetadata {
   @PrimaryGeneratedColumn('uuid')
   id: number;
