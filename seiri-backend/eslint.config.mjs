@@ -22,7 +22,7 @@ export default tseslint.config(
         },
         parserOptions: {
           projectService: true,
-          tsconfigRootDir: import.meta.dirname,
+          // tsconfigRootDir: import.meta.dirname,
         },
       },
     },
@@ -49,7 +49,7 @@ export default tseslint.config(
           },
          
           {
-            selector: 'variable',
+            selector: ['variable', 'EnumMember'],
             modifiers: ['const'],
             format: ['camelCase', 'UPPER_CASE'],
           },

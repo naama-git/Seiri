@@ -4,6 +4,7 @@ import { AppService } from './app.service';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthModule } from './auth/auth.module';
+import { FileSystemItemModule } from './file-system-item/file-system-item.module';
 
 
 
@@ -27,6 +28,7 @@ import { AuthModule } from './auth/auth.module';
       })
     }),
     AuthModule,
+    FileSystemItemModule,
    
   ],
   controllers: [AppController],
