@@ -6,7 +6,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthModule } from './auth/auth.module';
 import { FileSystemItemModule } from './file-system-item/file-system-item.module';
 import { FileModule } from './file/file.module';
-import { typeOrmConfig } from './config/typeORM.config';
+import { typeOrmConfig } from './core/typeORM.config';
 
 @Module({
   imports: [
