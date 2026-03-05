@@ -7,7 +7,7 @@ import {
   Logger,
 } from '@nestjs/common';
 import { Request, Response } from 'express';
-import { BussinessException } from './ExceptionModel';
+import { BussinessException } from './exception.model';
 
 @Catch()
 export class GlobalExceptionFilter implements ExceptionFilter {

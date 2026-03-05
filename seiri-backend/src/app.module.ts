@@ -13,7 +13,7 @@ import { typeOrmConfig } from './core/typeORM.config';
     ConfigModule.forRoot({
       isGlobal: true,
     }),
-    TypeOrmModule.forRootAsync(typeOrmConfig),
+    TypeOrmModule.forRoot(typeOrmConfig),
     AuthModule,
     FileSystemItemModule,
     FileModule,

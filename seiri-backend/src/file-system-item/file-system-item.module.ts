@@ -4,6 +4,6 @@ import { FileSystemItemController } from './file-system-item.controller';
 
 @Module({
   providers: [FileSystemItemService],
-  controllers: [FileSystemItemController]
+  controllers: [FileSystemItemController],
 })
 export class FileSystemItemModule {}
