@@ -4,6 +4,7 @@ import { setupSwagger } from './core/swagger.config';
 import { ConfigService } from '@nestjs/config';
 import { CorsOptions } from '@nestjs/common/interfaces/external/cors-options.interface';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston/dist/winston.constants';
+import helmet from 'helmet';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, { bufferLogs: true });
@@ -14,6 +15,7 @@ async function bootstrap() {
     app.enableCors(corsOptions);
   }
   setupSwagger(app);
+  app.use(helmet());
   const port = configService.get<number>('port') || 3000;
   await app.listen(port);
   console.log(
