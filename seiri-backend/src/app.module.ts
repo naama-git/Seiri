@@ -15,12 +15,13 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import throttlerConfig from './core/throttler.config';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
+import appConfig from './core/app.config';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
-      load: [databaseConfig, corsConfig, throttlerConfig],
+      load: [databaseConfig, corsConfig, appConfig, throttlerConfig],
     }),
     WinstonModule.forRoot(winstonConfig),
     ThrottlerModule.forRootAsync({

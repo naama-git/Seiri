@@ -14,14 +14,14 @@ async function bootstrap() {
   if (corsOptions) {
     app.enableCors(corsOptions);
   }
-  setupSwagger(app);
   app.use(helmet());
-  const apiPrefix = configService.get<string>('api_prefix') || 'api/v1';
+  const apiPrefix = configService.get<string>('app.apiPrefix') || 'api/v1';
+  setupSwagger(app, apiPrefix);
   app.setGlobalPrefix(apiPrefix);
-  const port = configService.get<number>('port') || 3000;
+  const port = configService.get<number>('app.port') || 3000;
   await app.listen(port);
   console.log(
-    `Server ready at http://localhost:${port}/${apiPrefix}/\n swagger at http://localhost:${port}/${apiPrefix}/seiri-docs`,
+    `Server ready at http://localhost:${port}/${apiPrefix}/\n swagger at http://localhost:${port}/seiri-docs`,
   );
 }
 void bootstrap();
