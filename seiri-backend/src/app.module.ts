@@ -16,6 +16,8 @@ import { AppService } from './app.service';
 import throttlerConfig from './core/throttler.config';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import appConfig from './core/app.config';
+import { TerminusModule } from '@nestjs/terminus/dist/terminus.module';
+import { HealthController } from './core/health.controller';
 
 @Module({
   imports: [
@@ -23,6 +25,7 @@ import appConfig from './core/app.config';
       isGlobal: true,
       load: [databaseConfig, corsConfig, appConfig, throttlerConfig],
     }),
+    TerminusModule,
     WinstonModule.forRoot(winstonConfig),
     ThrottlerModule.forRootAsync({
       inject: [ConfigService],
@@ -35,7 +38,7 @@ import appConfig from './core/app.config';
         configService.get('database')!,
     }),
   ],
-  controllers: [AppController],
+  controllers: [AppController, HealthController],
   providers: [
     AppService,
     {
