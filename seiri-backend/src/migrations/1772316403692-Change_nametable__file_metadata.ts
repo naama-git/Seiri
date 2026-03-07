@@ -1,5 +1,6 @@
 import { MigrationInterface, QueryRunner } from 'typeorm';
 
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export class ChangeNametable_fileMetadata1772316403692 implements MigrationInterface {
   name = 'ChangeNametable_fileMetadata1772316403692';
 

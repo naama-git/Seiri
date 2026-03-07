@@ -1,7 +1,7 @@
 import { Module, ValidationPipe } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { APP_FILTER, APP_PIPE } from '@nestjs/core';
+import { APP_FILTER, APP_GUARD, APP_PIPE } from '@nestjs/core';
 import { WinstonModule } from 'nest-winston';
 
 import databaseConfig from './core/database.config';
@@ -13,14 +13,21 @@ import { GlobalExceptionFilter } from './core/global-exception.filter';
 // import { FileModule } from './file/file.module';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
+import throttlerConfig from './core/throttler.config';
+import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
-      load: [databaseConfig, corsConfig],
+      load: [databaseConfig, corsConfig, throttlerConfig],
     }),
     WinstonModule.forRoot(winstonConfig),
+    ThrottlerModule.forRootAsync({
+      inject: [ConfigService],
+      useFactory: (configService: ConfigService) =>
+        configService.get('throttler')!,
+    }),
     TypeOrmModule.forRootAsync({
       inject: [ConfigService],
       useFactory: (configService: ConfigService) =>
@@ -37,6 +44,10 @@ import { AppService } from './app.service';
     {
       provide: APP_PIPE,
       useValue: new ValidationPipe({ whitelist: true, transform: true }),
+    },
+    {
+      provide: APP_GUARD,
+      useClass: ThrottlerGuard,
     },
   ],
 })
