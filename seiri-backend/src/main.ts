@@ -1,16 +1,23 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
-import { GlobalExceptionFilter } from './core/globalExceptionFilter';
-import { WinstonModule } from 'nest-winston/dist/winston.module';
-import { winstonConfig } from './core/logger.config';
 import { setupSwagger } from './core/swagger.config';
+import { ConfigService } from '@nestjs/config';
+import { CorsOptions } from '@nestjs/common/interfaces/external/cors-options.interface';
+import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston/dist/winston.constants';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule, {
-    logger: WinstonModule.createLogger(winstonConfig),
-  });
+  const app = await NestFactory.create(AppModule, { bufferLogs: true });
+  const configService = app.get(ConfigService);
+  app.useLogger(app.get(WINSTON_MODULE_NEST_PROVIDER));
+  const corsOptions = configService.get<CorsOptions>('cors');
+  if (corsOptions) {
+    app.enableCors(corsOptions);
+  }
   setupSwagger(app);
-  app.useGlobalFilters(new GlobalExceptionFilter());
-  await app.listen(process.env.PORT ?? 3000);
+  const port = configService.get<number>('port') || 3000;
+  await app.listen(port);
+  console.log(
+    `Server ready at http://localhost:${port}/\n swagger at http://localhost:${port}/seiri-docs`,
+  );
 }
 void bootstrap();

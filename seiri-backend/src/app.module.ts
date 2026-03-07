@@ -1,35 +1,43 @@
-import { Module } from '@nestjs/common';
+import { Module, ValidationPipe } from '@nestjs/common';
+import { ConfigModule, ConfigService } from '@nestjs/config';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { APP_FILTER, APP_PIPE } from '@nestjs/core';
+import { WinstonModule } from 'nest-winston';
+
+import databaseConfig from './core/database.config';
+import corsConfig from './core/cors.config';
+import { winstonConfig } from './core/winston.config';
+import { GlobalExceptionFilter } from './core/global-exception.filter';
+// import { FileSystemItemModule } from './file-system-item/file-system-item.module';
+// import { AuthModule } from './auth/auth.module';
+// import { FileModule } from './file/file.module';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { ConfigModule, ConfigService } from '@nestjs/config';
-import { TypeOrmModule, TypeOrmModuleOptions } from '@nestjs/typeorm';
-import { AuthModule } from './auth/auth.module';
-import { FileSystemItemModule } from './file-system-item/file-system-item.module';
-import { FileModule } from './file/file.module';
-import databaseConfig from './core/database.config';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
-      load: [databaseConfig],
+      load: [databaseConfig, corsConfig],
     }),
+    WinstonModule.forRoot(winstonConfig),
     TypeOrmModule.forRootAsync({
       inject: [ConfigService],
-      useFactory: (configService: ConfigService) => {
-        const dbConfig = configService.get<TypeOrmModuleOptions>('database');
-        if (!dbConfig) {
-          throw new Error('Database configuration is missing!');
-        }
-
-        return dbConfig;
-      },
+      useFactory: (configService: ConfigService) =>
+        configService.get('database')!,
     }),
-    AuthModule,
-    FileSystemItemModule,
-    FileModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [
+    AppService,
+    {
+      provide: APP_FILTER,
+      useClass: GlobalExceptionFilter,
+    },
+    {
+      provide: APP_PIPE,
+      useValue: new ValidationPipe({ whitelist: true, transform: true }),
+    },
+  ],
 })
 export class AppModule {}
