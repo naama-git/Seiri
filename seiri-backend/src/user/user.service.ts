@@ -15,9 +15,9 @@ export class UserService {
     private readonly userRepository: Repository<User>,
   ) {}
 
-  async findUserByEmail(email: string): Promise<ReadUserDTO | null> {
+  async findUserByEmail(email: string): Promise<User | null> {
     const existingUser = await this.userRepository.findOneBy({ email });
-    return new ReadUserDTO(existingUser);
+    return existingUser;
   }
 
   async findUserById(id: number): Promise<ReadUserDTO | null> {
@@ -31,6 +31,7 @@ export class UserService {
     if (existingUser) {
       throw new UnauthorizedException('user already exist');
     }
+
     this.userRepository.create(user);
     await this.userRepository.save(user);
   }

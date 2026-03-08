@@ -12,6 +12,7 @@ export class CreateUserDto {
   @Length(6, 50)
   password: string;
 }
+export class LoginUserDTO extends OmitType(CreateUserDto, ['name']) {}
 
 export class UpdateUserDto extends PartialType(CreateUserDto) {}
 

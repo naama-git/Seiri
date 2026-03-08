@@ -1,4 +1,70 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
+import bcrypt from 'bcrypt';
+import { BusinessException } from 'src/core/exception.model';
+import { CreateUserDto, LoginUserDTO } from 'src/user/dto/User.dto';
+import { UserService } from 'src/user/user.service';
 
 @Injectable()
-export class AuthService {}
+export class AuthService {
+  constructor(
+    @Inject(UserService)
+    private readonly userService: UserService,
+  ) {}
+
+  async hashPassword(password: string): Promise<string> {
+    return await bcrypt.hash(password, 10);
+  }
+
+  async register(user: CreateUserDto) {
+    const existingUser = await this.userService.findUserByEmail(user.email);
+    if (existingUser) {
+      throw new BusinessException(
+        'User data error',
+        400,
+        'User already exist',
+        'signIn',
+        'AuthService',
+      );
+    }
+    const hashPass: string = await this.hashPassword(user.password);
+    return await this.userService.createUser({
+      ...user,
+      password: hashPass,
+    });
+  }
+
+  async comparePassword(
+    password: string,
+    hashedPassword: string,
+  ): Promise<boolean> {
+    return await bcrypt.compare(password, hashedPassword);
+  }
+
+  async logIn(user: LoginUserDTO) {
+    const existingUser = await this.userService.findUserByEmail(user.email);
+    if (!existingUser) {
+      throw new BusinessException(
+        'User not found',
+        400,
+        'User not found',
+        'logIn',
+        'AuthService',
+      );
+    }
+    const isMatch = await bcrypt.compare(user.password, existingUser.password);
+
+    if (!isMatch) {
+      throw new BusinessException(
+        'Authentication failed',
+        401,
+        'Invalid email or password',
+        'signIn',
+        'AuthService',
+      );
+    }
+
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { password, ...result } = user;
+    return result;
+  }
+}
