@@ -16,8 +16,11 @@ export class UserService {
   ) {}
 
   async findUserByEmail(email: string): Promise<User | null> {
-    const existingUser = await this.userRepository.findOneBy({ email });
-    return existingUser;
+    const user = await this.userRepository.findOne({
+    where: { email },
+    select: ['id', 'email', 'password', 'name', 'role'], 
+    });
+    return user;
   }
 
   async findUserById(id: number): Promise<ReadUserDTO | null> {
@@ -32,8 +35,8 @@ export class UserService {
       throw new UnauthorizedException('user already exist');
     }
 
-    this.userRepository.create(user);
-    await this.userRepository.save(user);
+    const savedUser = this.userRepository.create({ ...user, role: 'User' });
+    await this.userRepository.save(savedUser);
   }
 
   async updateUser(id: number, userDto: UpdateUserDto): Promise<void> {
