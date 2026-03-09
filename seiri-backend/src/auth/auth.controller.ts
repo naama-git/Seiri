@@ -1,7 +1,7 @@
 import { Body, Controller, Get, Post, UseGuards } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport/dist/auth.guard';
 import { AuthService } from './auth.service';
-import { LoginUserDTO } from 'src/user/dto/User.dto';
+import { CreateUserDto, LoginUserDTO } from 'src/user/dto/User.dto';
 import type { AuthenticatedUser, LoginResponse } from './auth.interface';
 import { CurrentUser } from './current-user.decorator';
 
@@ -12,6 +12,11 @@ export class AuthController {
   @Post('login')
   async login(@Body() loginDto: LoginUserDTO): Promise<LoginResponse> {
     return await this.authService.logIn(loginDto);
+  }
+  
+  @Post('register')
+  async register(@Body() createUserDto: CreateUserDto): Promise<void> {
+    return await this.authService.register(createUserDto);
   }
 
   @UseGuards(AuthGuard('jwt'))

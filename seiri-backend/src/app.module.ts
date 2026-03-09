@@ -18,6 +18,7 @@ import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import appConfig from './core/app.config';
 import { TerminusModule } from '@nestjs/terminus/dist/terminus.module';
 import { HealthController } from './core/health.controller';
+import { AuthModule } from './auth/auth.module';
 
 @Module({
   imports: [
@@ -37,6 +38,7 @@ import { HealthController } from './core/health.controller';
       useFactory: (configService: ConfigService) =>
         configService.get('database')!,
     }),
+    AuthModule,
   ],
   controllers: [AppController, HealthController],
   providers: [

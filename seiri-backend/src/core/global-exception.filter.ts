@@ -7,7 +7,7 @@ import {
   Logger,
 } from '@nestjs/common';
 import { Request, Response } from 'express';
-import { BussinessException } from './exception.model';
+import { BusinessException } from './exception.model';
 
 @Catch()
 export class GlobalExceptionFilter implements ExceptionFilter {
@@ -29,7 +29,7 @@ export class GlobalExceptionFilter implements ExceptionFilter {
         : 'Internal server error';
 
     let internalInfo = {};
-    if (exception instanceof BussinessException) {
+    if (exception instanceof BusinessException) {
       internalInfo = {
         detailedMessage: exception.detailedMessage,
         func: exception.func,
