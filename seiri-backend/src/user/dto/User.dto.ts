@@ -9,7 +9,7 @@ export class CreateUserDto {
   @IsEmail()
   email: string;
 
-  @Length(6, 50)
+  @Length(6, 255)
   password: string;
 }
 export class LoginUserDTO extends OmitType(CreateUserDto, ['name']) {}
