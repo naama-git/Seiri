@@ -15,8 +15,11 @@ export class User {
   @PrimaryGeneratedColumn('uuid')
   id: number;
 
-  @Column({ nullable: false, length: 100 })
-  name: string;
+  @Column({ nullable: false, length: 100, name:'first_name' })
+  firstName: string;
+
+  @Column({ nullable: false, length: 100, name:'last_name' })
+  lastName: string;
 
   @Column({ nullable: false, length: 255, select: false })
   password: string;

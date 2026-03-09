@@ -67,7 +67,7 @@ export class AuthService {
     }
 
     const payload: JwtPayload = {
-      username: existingUser.name,
+      username: existingUser.firstName,
       sub: existingUser.id,
       role: existingUser.role,
     };
@@ -76,7 +76,8 @@ export class AuthService {
       user: {
         userId: existingUser.id,
         userEmail: existingUser.email,
-        username: existingUser.name,
+        firstName: existingUser.firstName,
+        lastName: existingUser.lastName,
         role: existingUser.role,
       },
     };
