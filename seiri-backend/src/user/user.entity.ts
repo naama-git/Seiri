@@ -13,12 +13,12 @@ import {
 @Entity('users')
 export class User {
   @PrimaryGeneratedColumn('uuid')
-  id: number;
+  id: string;
 
-  @Column({ nullable: false, length: 100, name:'first_name' })
+  @Column({ nullable: false, length: 100, name: 'first_name' })
   firstName: string;
 
-  @Column({ nullable: false, length: 100, name:'last_name' })
+  @Column({ nullable: false, length: 100, name: 'last_name' })
   lastName: string;
 
   @Column({ nullable: false, length: 255, select: false })

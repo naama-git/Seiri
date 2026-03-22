@@ -15,7 +15,10 @@ export class CreateUserDto {
   @Length(6, 255)
   password: string;
 }
-export class LoginUserDTO extends OmitType(CreateUserDto, ['firstName', 'lastName']) {}
+export class LoginUserDTO extends OmitType(CreateUserDto, [
+  'firstName',
+  'lastName',
+]) {}
 
 export class UpdateUserDto extends PartialType(CreateUserDto) {}
 
@@ -30,9 +33,7 @@ export class ReadUserDTO extends OmitType(CreateUserDto, ['password']) {
     this.role = entity.role;
   }
 
-  id: number;
+  id: string;
   role: 'User' | 'Admin';
   isActive: boolean;
 }
-
-
