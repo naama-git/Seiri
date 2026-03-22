@@ -4,6 +4,7 @@ import { AuthService } from './auth.service';
 import { CreateUserDto, LoginUserDTO } from 'src/user/dto/User.dto';
 import type { AuthenticatedUser, LoginResponse } from './auth.interface';
 import { CurrentUser } from './current-user.decorator';
+import { ApiBearerAuth } from '@nestjs/swagger/dist/decorators/api-bearer.decorator';
 
 @Controller('auth')
 export class AuthController {
@@ -19,6 +20,7 @@ export class AuthController {
     return await this.authService.register(createUserDto);
   }
 
+  @ApiBearerAuth('access-token')
   @UseGuards(AuthGuard('jwt'))
   @Get('profile')
   getProfile(@CurrentUser() user:AuthenticatedUser) {

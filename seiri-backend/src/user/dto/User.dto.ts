@@ -34,3 +34,5 @@ export class ReadUserDTO extends OmitType(CreateUserDto, ['password']) {
   role: 'User' | 'Admin';
   isActive: boolean;
 }
+
+

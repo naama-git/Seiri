@@ -8,7 +8,7 @@ import { BusinessException } from 'src/core/exception.model';
 
 // jwt.strategy.ts
 @Injectable()
-export class JwtStrategy extends PassportStrategy(Strategy) {
+export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
   constructor(
     private configService: ConfigService,
     private usersService: UserService,
@@ -18,9 +18,11 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       ignoreExpiration: false,
       secretOrKey: configService.getOrThrow<string>('JWT_SECRET_KEY'),
     });
+    
   }
 
   async validate(payload: JwtPayload): Promise<AuthenticatedUser> {
+    
     const user = await this.usersService.findUserById(payload.sub);
     if (!user) {
       throw new BusinessException(
@@ -31,7 +33,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
         'JwtStrategy',
       );
     }
-    const { id, name, email, role } = user;
-    return { userId: id, username: name, userEmail: email, role };
+    const { id, firstName, lastName, email, role } = user;
+    return { userId: id, firstName, lastName, userEmail: email, role };
   }
 }

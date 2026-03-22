@@ -44,7 +44,7 @@ export default tseslint.config(
           },
           // Interfaces, Classes,Enums...
           {
-            selector: 'typeLike, decorator',
+            "selector": ["typeLike"],
             format: ['PascalCase'],
           },
          
