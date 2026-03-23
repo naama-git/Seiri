@@ -5,6 +5,7 @@ import { BusinessException } from 'src/core/exception.model';
 import { CreateUserDto, LoginUserDTO } from 'src/user/User.dto';
 import { UserService } from 'src/user/user.service';
 import { JwtPayload, LoginResponse } from './auth.interface';
+import { User } from 'src/user/user.entity';
 
 @Injectable()
 export class AuthService {
@@ -18,7 +19,7 @@ export class AuthService {
     return await bcrypt.hash(password, 10);
   }
 
-  async register(user: CreateUserDto): Promise<void> {
+  async register(user: CreateUserDto): Promise<User> {
     const existingUser = await this.userService.findRawUserByEmail(user.email);
     if (existingUser) {
       throw new BusinessException(

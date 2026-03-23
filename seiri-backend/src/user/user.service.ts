@@ -1,8 +1,4 @@
-import {
-  Injectable,
-  NotFoundException,
-  UnauthorizedException,
-} from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { User, Role } from './user.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -17,7 +13,7 @@ export class UserService {
   ) {}
 
   // --- CRUD ---
-  async getUserById(id: string): Promise<User | null> {
+  async getUserById(id: string): Promise<User> {
     const existingUser = await this.userRepository.findOneBy({ id });
     if (!existingUser) {
       throw new BusinessException(
@@ -25,19 +21,13 @@ export class UserService {
         404,
         'User with ID' + id + 'not found',
         'getUserById',
-        'UserService',
+        this.constructor.name,
       );
     }
     return existingUser;
   }
 
-  async createUser(user: CreateUserDto): Promise<void> {
-    const email = user.email;
-    const existingUser = await this.userRepository.findOneBy({ email });
-    if (existingUser) {
-      throw new UnauthorizedException('user already exists');
-    }
-
+  async createUser(user: CreateUserDto): Promise<User> {
     const savedUser = this.userRepository.create({
       ...user,
       role: Role.USER,
@@ -49,34 +39,31 @@ export class UserService {
         500,
         '',
         this.createUser.name,
-        'UserService',
+        this.constructor.name,
       );
     }
 
-    await this.userRepository.save(savedUser);
+    return await this.userRepository.save(savedUser);
   }
 
-  async updateUser(id: string, userDto: UpdateUserDto): Promise<void> {
-    const existUser = await this.userRepository.findOneBy({ id });
-    if (!existUser) {
-      throw new NotFoundException('User not found');
-    }
-    const updatedUser = this.userRepository.merge(existUser, userDto);
+  async updateUser(id: string, updateDto: UpdateUserDto): Promise<User> {
+    const user = await this.getUserById(id);
+    this.userRepository.merge(user, updateDto);
 
-    if (!updatedUser) {
+    try {
+      return await this.userRepository.save(user);
+    } catch (error) {
       throw new BusinessException(
-        'Error saving user data',
+        'Update failed',
         500,
-        '',
+        (error as Error).message,
         this.updateUser.name,
-        'UserService',
+        this.constructor.name,
       );
     }
-
-    await this.userRepository.save(existUser);
   }
 
-  //Inner functions
+  // --- Inner functions ---
   async findRawUserByEmail(email: string): Promise<User | null> {
     const user = await this.userRepository.findOne({
       where: { email },

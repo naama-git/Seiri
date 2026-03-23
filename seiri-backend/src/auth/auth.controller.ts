@@ -5,6 +5,7 @@ import { CreateUserDto, LoginUserDTO } from 'src/user/User.dto';
 import type { AuthenticatedUser, LoginResponse } from './auth.interface';
 import { currentUser } from './current-user.decorator';
 import { ApiBearerAuth } from '@nestjs/swagger/dist/decorators/api-bearer.decorator';
+import { User } from 'src/user/user.entity';
 
 @Controller('auth')
 export class AuthController {
@@ -16,7 +17,7 @@ export class AuthController {
   }
 
   @Post('register')
-  async register(@Body() createUserDto: CreateUserDto): Promise<void> {
+  async register(@Body() createUserDto: CreateUserDto): Promise<User> {
     return await this.authService.register(createUserDto);
   }
 

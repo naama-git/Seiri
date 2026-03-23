@@ -7,24 +7,31 @@ import {
   MaxLength,
 } from 'class-validator';
 import { Role } from './user.entity';
+import { Expose } from 'class-transformer';
 
 export class ReadUserDto {
+  @Expose()
   readonly id: string;
 
+  @Expose()
   @MaxLength(100)
   @IsString()
   readonly firstName: string;
 
+  @Expose()
   @MaxLength(100)
   @IsString()
   readonly lastName: string;
 
+  @Expose()
   @IsEmail()
   readonly email: string;
 
+  @Expose()
   @IsEnum(Role)
   readonly role: Role;
 
+  @Expose()
   @IsBoolean()
   readonly isActive: boolean;
 }
