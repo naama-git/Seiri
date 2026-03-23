@@ -12,9 +12,9 @@ import {
 
 export enum Role {
   // eslint-disable-next-line @typescript-eslint/naming-convention
-  USER = 'file',
+  USER = 'user',
   // eslint-disable-next-line @typescript-eslint/naming-convention
-  ADMIN = 'folder',
+  ADMIN = 'admin',
 }
 
 @Entity('users')

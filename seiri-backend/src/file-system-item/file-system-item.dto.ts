@@ -1,5 +1,5 @@
 import { OmitType, PartialType } from '@nestjs/swagger';
-import { ReadUserDTO } from 'src/user/dto/User.dto';
+import { ReadUserDto } from 'src/user/User.dto';
 
 export class CreateFileSystemItemDto {
   name: string;
@@ -11,7 +11,7 @@ export class ReadFileSystemItemDto extends OmitType(
   [],
 ) {
   id: string;
-  owner: ReadUserDTO;
+  owner: ReadUserDto;
   parent: ReadFileSystemItemDto | null;
   children: ReadFileSystemItemDto[] | null;
   // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
