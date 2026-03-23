@@ -1,4 +1,5 @@
-import { ValidationPipe, BadRequestException } from '@nestjs/common';
+import { ValidationPipe, HttpStatus } from '@nestjs/common';
+import { BusinessException } from './exception.model';
 
 export const globalValidationPipe = new ValidationPipe({
   whitelist: true,
@@ -11,11 +12,20 @@ export const globalValidationPipe = new ValidationPipe({
     enableImplicitConversion: true,
   },
 
-  exceptionFactory: (errors) => {
-    const messages = errors.map(
-      (err) =>
-        `${err.property} has wrong value: ${Object.values(err.constraints || {}).join(', ')}`,
+  exceptionFactory: (validationErrors) => {
+    const messages = validationErrors
+      .map((error) => {
+        const constraints = Object.values(error.constraints || {}).join(', ');
+        return `${error.property}: ${constraints}`;
+      })
+      .join('; ');
+
+    return new BusinessException(
+      'Validation Failed',
+      HttpStatus.BAD_REQUEST,
+      messages,
+      'GlobalValidationPipe',
+      '',
     );
-    return new BadRequestException(messages);
   },
 });
