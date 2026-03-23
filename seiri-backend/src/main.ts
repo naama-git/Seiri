@@ -5,19 +5,30 @@ import { ConfigService } from '@nestjs/config';
 import { CorsOptions } from '@nestjs/common/interfaces/external/cors-options.interface';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston/dist/winston.constants';
 import helmet from 'helmet';
+import { globalValidationPipe } from './core/validation.pipe';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, { bufferLogs: true });
+
   const configService = app.get(ConfigService);
+
   app.useLogger(app.get(WINSTON_MODULE_NEST_PROVIDER));
+
   const corsOptions = configService.get<CorsOptions>('cors');
   if (corsOptions) {
     app.enableCors(corsOptions);
   }
+
   app.use(helmet());
+
   const apiPrefix = configService.get<string>('app.apiPrefix') || 'api/v1';
+
   setupSwagger(app, apiPrefix);
+
+  app.useGlobalPipes(globalValidationPipe);
+
   app.setGlobalPrefix(apiPrefix);
+
   const port = configService.get<number>('app.port') || 3000;
   await app.listen(port);
   console.log(
