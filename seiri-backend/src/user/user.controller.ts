@@ -7,7 +7,7 @@ export class UserController {
   constructor(private readonly userservice: UserService) {}
 
   @Get('findUserById/:id')
-  async findUserById(@Param('id') id: number) {
-    await this.userservice.findUserById(id);
+  async findUserById(@Param('id') id: string) {
+    await this.userservice.getUserById(id);
   }
 }

@@ -1,9 +1,9 @@
 import { Body, Controller, Get, Post, UseGuards } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport/dist/auth.guard';
 import { AuthService } from './auth.service';
-import { CreateUserDto, LoginUserDTO } from 'src/user/dto/User.dto';
+import { CreateUserDto, LoginUserDTO } from 'src/user/User.dto';
 import type { AuthenticatedUser, LoginResponse } from './auth.interface';
-import { CurrentUser } from './current-user.decorator';
+import { currentUser } from './current-user.decorator';
 import { ApiBearerAuth } from '@nestjs/swagger/dist/decorators/api-bearer.decorator';
 
 @Controller('auth')
@@ -14,7 +14,7 @@ export class AuthController {
   async login(@Body() loginDto: LoginUserDTO): Promise<LoginResponse> {
     return await this.authService.logIn(loginDto);
   }
-  
+
   @Post('register')
   async register(@Body() createUserDto: CreateUserDto): Promise<void> {
     return await this.authService.register(createUserDto);
@@ -23,7 +23,7 @@ export class AuthController {
   @ApiBearerAuth('access-token')
   @UseGuards(AuthGuard('jwt'))
   @Get('profile')
-  getProfile(@CurrentUser() user:AuthenticatedUser) {
+  getProfile(@currentUser() user: AuthenticatedUser) {
     return user;
   }
 }

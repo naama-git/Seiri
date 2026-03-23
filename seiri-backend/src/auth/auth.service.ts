@@ -2,7 +2,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt/dist/jwt.service';
 import bcrypt from 'bcrypt';
 import { BusinessException } from 'src/core/exception.model';
-import { CreateUserDto, LoginUserDTO } from 'src/user/dto/User.dto';
+import { CreateUserDto, LoginUserDTO } from 'src/user/User.dto';
 import { UserService } from 'src/user/user.service';
 import { JwtPayload, LoginResponse } from './auth.interface';
 
@@ -19,7 +19,7 @@ export class AuthService {
   }
 
   async register(user: CreateUserDto): Promise<void> {
-    const existingUser = await this.userService.findUserByEmail(user.email);
+    const existingUser = await this.userService.findRawUserByEmail(user.email);
     if (existingUser) {
       throw new BusinessException(
         'User data error',
@@ -44,7 +44,7 @@ export class AuthService {
   }
 
   async logIn(user: LoginUserDTO): Promise<LoginResponse> {
-    const existingUser = await this.userService.findUserByEmail(user.email);
+    const existingUser = await this.userService.findRawUserByEmail(user.email);
     if (!existingUser) {
       throw new BusinessException(
         'User not found',
@@ -67,7 +67,7 @@ export class AuthService {
     }
 
     const payload: JwtPayload = {
-      username: existingUser.firstName+' '+existingUser.lastName,
+      username: existingUser.firstName + ' ' + existingUser.lastName,
       sub: existingUser.id,
       role: existingUser.role,
     };
