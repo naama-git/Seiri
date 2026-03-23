@@ -6,7 +6,8 @@ import {
 import { User } from './user.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { CreateUserDto, ReadUserDTO, UpdateUserDto } from './dto/User.dto';
+import { CreateUserDto, ReadUserDTO, UpdateUserDto } from './User.dto';
+import { BusinessException } from 'src/core/exception.model';
 
 @Injectable()
 export class UserService {
@@ -15,7 +16,7 @@ export class UserService {
     private readonly userRepository: Repository<User>,
   ) {}
 
-  async findUserByEmail(email: string): Promise<User | null> {
+  async findRawUserByEmail(email: string): Promise<User | null> {
     const user = await this.userRepository.findOne({
       where: { email },
       select: ['id', 'email', 'password', 'firstName', 'lastName', 'role'],
@@ -28,8 +29,17 @@ export class UserService {
     return existingUser;
   }
 
-  async findUserById(id: string): Promise<ReadUserDTO | null> {
+  async getUserById(id: string): Promise<ReadUserDTO | null> {
     const existingUser = await this.userRepository.findOneBy({ id });
+    if (!existingUser) {
+      throw new BusinessException(
+        'User not found',
+        404,
+        'User with ID' + id + 'not found',
+        'getUserById',
+        'UserService',
+      );
+    }
     return new ReadUserDTO(existingUser);
   }
 
@@ -37,7 +47,7 @@ export class UserService {
     const email = user.email;
     const existingUser = await this.userRepository.findOneBy({ email });
     if (existingUser) {
-      throw new UnauthorizedException('user already exist');
+      throw new UnauthorizedException('user already exists');
     }
 
     const savedUser = this.userRepository.create({ ...user, role: 'User' });

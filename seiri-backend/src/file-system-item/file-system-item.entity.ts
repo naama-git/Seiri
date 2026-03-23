@@ -26,7 +26,7 @@ export enum ItemType {
 @Tree('materialized-path')
 export class FileSystemItem {
   @PrimaryGeneratedColumn('uuid')
-  id: number;
+  id: string;
 
   @Column({ nullable: false })
   name: string;

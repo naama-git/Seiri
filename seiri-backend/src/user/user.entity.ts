@@ -10,6 +10,13 @@ import {
   CreateDateColumn,
 } from 'typeorm';
 
+export enum Role {
+  // eslint-disable-next-line @typescript-eslint/naming-convention
+  USER = 'file',
+  // eslint-disable-next-line @typescript-eslint/naming-convention
+  ADMIN = 'folder',
+}
+
 @Entity('users')
 export class User {
   @PrimaryGeneratedColumn('uuid')
@@ -27,8 +34,13 @@ export class User {
   @Column({ nullable: false, unique: true })
   email: string;
 
-  @Column({ nullable: false })
-  role: 'Admin' | 'User';
+  @Column({
+    nullable: false,
+    type: 'enum',
+    enum: Role,
+    default: Role.USER,
+  })
+  type: Role;
 
   @OneToOne(() => FileSystemItem, { cascade: true })
   @JoinColumn({ name: 'root_folder_id' })

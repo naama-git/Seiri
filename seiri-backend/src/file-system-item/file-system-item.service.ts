@@ -1,14 +1,12 @@
 import { Injectable } from '@nestjs/common';
 import {
   CreateFileSystemItemDto,
-  ReadFileSystemItemDto,
   UpdatePlainFileSystemItemDto,
 } from './file-system-item.dto';
 import { InjectRepository } from '@nestjs/typeorm';
-import { FileSystemItem } from './file-system-item.entity';
-import { TreeRepository } from 'typeorm';
-import { UserService } from 'src/user/user.service';
-import { User } from 'src/user/user.entity';
+import { FileSystemItem, ItemType } from './file-system-item.entity';
+import { IsNull, TreeRepository } from 'typeorm';
+// import { UserService } from 'src/user/user.service';
 import { BusinessException } from 'src/core/exception.model';
 
 @Injectable()
@@ -16,26 +14,19 @@ export class FileSystemItemService {
   constructor(
     @InjectRepository(FileSystemItem)
     private readonly itemRepository: TreeRepository<FileSystemItem>,
-    private readonly userService: UserService,
+    // private readonly userService: UserService,
   ) {}
 
   async createFileSystemItem(item: CreateFileSystemItemDto, userId: string) {}
 
   async getRootFolder(userId: string) {
-    const user: User | null = await this.userService.findRawUserById(userId);
-    if (user == null) {
-      throw new BusinessException(
-        'user not found',
-        404,
-        'User with id ' + userId + ' not found',
-        'getRootFolder',
-        'FileSystemItemService',
-      );
-    }
-    const rootFolder: FileSystemItem | null =
-      await this.itemRepository.findOneBy({
-        owner: user,
-      });
+    const rootFolder = await this.itemRepository.findOne({
+      where: {
+        owner: { id: userId },
+        parent: IsNull(),
+        type: ItemType.FOLDER,
+      },
+    });
 
     if (rootFolder == null) {
       throw new BusinessException(
@@ -46,13 +37,27 @@ export class FileSystemItemService {
         'FileSystemItemService',
       );
     }
-
-    return new ReadFileSystemItemDto(rootFolder);
   }
 
-  async readFileSystemItemById(id: string, userId: string) {}
+  async getFileSystemItemById(id: string, userId: string) {
+    const item = await this.itemRepository.findOne({
+      where: {
+        id: id,
+        owner: { id: userId },
+      },
+    });
+    if (item == null) {
+      throw new BusinessException(
+        'Item not found',
+        404,
+        'Item with id ' + id + ' not found',
+        'readFileSystemItemById',
+        'FileSystemItemService',
+      );
+    }
+  }
 
-  async readAllFileSystemItems(userId: string) {}
+  async getAllFileSystemItems(userId: string) {}
 
   async updateFileSystemItem(
     id: string,
@@ -74,5 +79,5 @@ export class FileSystemItemService {
     userId: string,
   ) {}
 
-  async getSize(id: string, userId: string);
+  async getSize(id: string, userId: string){}
 }
