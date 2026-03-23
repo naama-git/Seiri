@@ -40,7 +40,7 @@ export class User {
     enum: Role,
     default: Role.USER,
   })
-  type: Role;
+  role: Role;
 
   @OneToOne(() => FileSystemItem, { cascade: true })
   @JoinColumn({ name: 'root_folder_id' })

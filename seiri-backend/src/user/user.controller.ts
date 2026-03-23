@@ -1,7 +1,6 @@
-import { Body, Controller, Get, Param } from '@nestjs/common';
+import { Controller, Get, Param } from '@nestjs/common';
 // import { ReadUserDTO } from './dto/User.dto';
 import { UserService } from './user.service';
-// import { Observable } from 'rxjs';
 
 @Controller('user')
 export class UserController {
@@ -9,6 +8,6 @@ export class UserController {
 
   @Get('findUserById/:id')
   async findUserById(@Param('id') id: number) {
-    return this.userservice.findUserById(id);
+    await this.userservice.findUserById(id);
   }
 }

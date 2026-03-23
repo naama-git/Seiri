@@ -18,12 +18,10 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
       ignoreExpiration: false,
       secretOrKey: configService.getOrThrow<string>('JWT_SECRET_KEY'),
     });
-    
   }
 
   async validate(payload: JwtPayload): Promise<AuthenticatedUser> {
-    
-    const user = await this.usersService.findUserById(payload.sub);
+    const user = await this.usersService.findRawUserById(payload.sub);
     if (!user) {
       throw new BusinessException(
         'Unauthorized',
