@@ -14,36 +14,57 @@ export class UserService {
 
   // --- CRUD ---
   async getUserById(id: string): Promise<User> {
-    const existingUser = await this.userRepository.findOneBy({ id });
-    if (!existingUser) {
+    try {
+      const existingUser = await this.userRepository.findOneBy({ id });
+      if (!existingUser) {
+        throw new BusinessException(
+          'User not found',
+          404,
+          `User with ID ${id} not found`,
+          this.getUserById.name,
+          this.constructor.name,
+        );
+      }
+      return existingUser;
+    } catch (error) {
+      if (error instanceof BusinessException) throw error;
       throw new BusinessException(
-        'User not found',
-        404,
-        'User with ID' + id + 'not found',
-        'getUserById',
+        'Database error',
+        400,
+        (error as Error).message,
+        this.getUserById.name,
         this.constructor.name,
       );
     }
-    return existingUser;
   }
-
   async createUser(user: CreateUserDto): Promise<User> {
-    const savedUser = this.userRepository.create({
-      ...user,
-      role: Role.USER,
-    });
-
-    if (!savedUser) {
+    const existing = await this.userRepository.findOneBy({ email: user.email });
+    if (existing) {
       throw new BusinessException(
-        'Error saving user data',
-        500,
-        '',
+        'Conflict',
+        409,
+        'User already exists',
         this.createUser.name,
         this.constructor.name,
       );
     }
 
-    return await this.userRepository.save(savedUser);
+    const newUser = this.userRepository.create({
+      ...user,
+      role: Role.USER,
+    });
+
+    try {
+      return await this.userRepository.save(newUser);
+    } catch (error) {
+      throw new BusinessException(
+        'Internal Server Error',
+        500,
+        (error as Error).message,
+        this.createUser.name,
+        this.constructor.name,
+      );
+    }
   }
 
   async updateUser(id: string, updateDto: UpdateUserDto): Promise<User> {

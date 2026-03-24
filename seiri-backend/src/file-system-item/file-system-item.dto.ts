@@ -27,5 +27,5 @@ export class UpdatePlainFileSystemItemDto extends PartialType(
 export class UpdateItemLocationDto extends PartialType(
   CreateFileSystemItemDto,
 ) {
-  parentId: string | null; // Allow moving to root by setting parentId to null
+  parentId: string | null;
 }

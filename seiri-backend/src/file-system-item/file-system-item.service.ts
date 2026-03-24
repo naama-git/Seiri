@@ -39,6 +39,15 @@ export class FileSystemItemService {
     }
   }
 
+  async createRootFolder(userId: string) {
+    const rootFolder = this.itemRepository.create({
+      name: 'root-folder',
+      type: ItemType.FOLDER,
+    });
+    await this.itemRepository.save(rootFolder);
+    return rootFolder;
+  }
+
   async getFileSystemItemById(id: string, userId: string) {
     const item = await this.itemRepository.findOne({
       where: {
@@ -79,5 +88,5 @@ export class FileSystemItemService {
     userId: string,
   ) {}
 
-  async getSize(id: string, userId: string){}
+  async getSize(id: string, userId: string) {}
 }

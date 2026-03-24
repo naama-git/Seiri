@@ -6,13 +6,12 @@ import type { AuthenticatedUser, LoginResponse } from './auth.interface';
 import { currentUser } from './current-user.decorator';
 import { ApiBearerAuth } from '@nestjs/swagger/dist/decorators/api-bearer.decorator';
 import { User } from 'src/user/user.entity';
-import { serialize } from 'src/user/user.interceptor';
+import { serialize } from 'src/core/mapper.interceptor';
 
 @Controller('auth')
 export class AuthController {
   constructor(private authService: AuthService) {}
 
-  @serialize(ReadUserDto)
   @Post('login')
   async login(@Body() loginDto: LoginUserDTO): Promise<LoginResponse> {
     return await this.authService.logIn(loginDto);
