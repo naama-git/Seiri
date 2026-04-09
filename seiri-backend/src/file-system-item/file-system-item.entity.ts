@@ -28,7 +28,7 @@ export class FileSystemItem {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column({ nullable: false })
+  @Column({ nullable: false, length: 255 })
   name: string;
 
   @Column({
