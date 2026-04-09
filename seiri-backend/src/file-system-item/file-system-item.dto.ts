@@ -21,14 +21,14 @@ export class ReadItemDTO {
   owner: ReadUserDto;
 
   @Expose()
-  parent: ReadItemDTO | null;
+  parent: ReadItemDTO | undefined;
 
   @Expose()
-  children: ReadItemDTO[] | null;
+  children: ReadItemDTO[] | undefined;
 
   @Expose()
   // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
-  ai_tags: any | null;
+  ai_tags: any | undefined;
 
   @Expose()
   created_at: Date;
@@ -37,10 +37,12 @@ export class ReadItemDTO {
   metadata: any;
 }
 
-export class CreateFileSystemItemDto extends PickType(ReadItemDTO, [
+export class CreateItemDto extends PickType(ReadItemDTO, [
   'name',
   'type',
-] as const) {}
+] as const) {
+  parentId: string;
+}
 
 export class UpdateItemDTO extends PartialType(
   PickType(ReadItemDTO, ['id', 'type', 'created_at', 'owner'] as const),

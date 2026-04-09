@@ -46,14 +46,17 @@ export class FileSystemItem {
   @JoinColumn({ name: 'owner_id' })
   owner: User;
 
-  @TreeParent()
+  @TreeParent({ onDelete: 'CASCADE' })
   @JoinColumn({ name: 'parent_id' })
   parent: FileSystemItem;
 
   @TreeChildren()
   children: FileSystemItem[];
 
-  @OneToOne(() => FileMetadata, (metadata) => metadata.item, { cascade: true })
+  @OneToOne(() => FileMetadata, (metadata) => metadata.item, {
+    cascade: true,
+    onDelete: 'CASCADE',
+  })
   metadata: FileMetadata;
 
   @CreateDateColumn()
