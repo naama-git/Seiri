@@ -3,9 +3,8 @@ import { CreateItemDto, UpdateItemDTO } from './file-system-item.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { FileSystemItem, ItemType } from './file-system-item.entity';
 import { IsNull, TreeRepository } from 'typeorm';
-// import { UserService } from 'src/user/user.service';
-import { BusinessException } from 'src/core/exception.model';
-import { UserService } from 'src/user/user.service';
+import { BusinessException } from '@/core/exception.model';
+import { UserService } from '../user/user.service';
 
 @Injectable()
 export class FileSystemItemService {
@@ -69,12 +68,14 @@ export class FileSystemItemService {
   }
 
   async createRootFolder(userId: string) {
-    const rootFolder = this.itemRepository.create({
-      name: 'root-folder',
-      type: ItemType.FOLDER,
-    });
-    await this.itemRepository.save(rootFolder);
-    return rootFolder;
+    return await this.createFileSystemItem(
+      {
+        type: ItemType.FOLDER,
+        name: `root-folder-${userId}`,
+        parentId: undefined,
+      },
+      userId,
+    );
   }
 
   async getFileSystemItemById(id: string, userId: string) {

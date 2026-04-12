@@ -1,47 +1,52 @@
 import { Expose } from 'class-transformer';
-import { IsEnum, IsString, MaxLength } from 'class-validator';
-import { ReadUserDto } from 'src/user/User.dto';
+import { IsEnum, IsNotEmpty, IsString, MaxLength } from 'class-validator';
+import { ReadUserDto } from '@/user/User.dto';
 import { ItemType } from './file-system-item.entity';
 import { PartialType, PickType } from '@nestjs/swagger';
+import { ReadFileDto } from '@/file/file.dto';
 
 export class ReadItemDTO {
   @Expose()
   @IsString()
-  id: string;
+  @IsNotEmpty()
+  id!: string;
 
   @Expose()
   @IsString()
+  @IsNotEmpty()
   @MaxLength(255)
-  name: string;
+  name!: string;
 
   @IsEnum(ItemType)
-  type: ItemType;
+  @IsNotEmpty()
+  type!: ItemType;
 
   @Expose()
-  owner: ReadUserDto;
+  @IsNotEmpty()
+  owner!: ReadUserDto;
 
   @Expose()
+  @IsNotEmpty()
   parent: ReadItemDTO | undefined;
 
   @Expose()
-  children: ReadItemDTO[] | undefined;
+  children: ReadItemDTO[] = [];
 
   @Expose()
-  // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
-  ai_tags: any | undefined;
+  ai_tags: any;
 
   @Expose()
-  created_at: Date;
+  created_at!: Date;
 
   @Expose()
-  metadata: any;
+  metadata?: ReadFileDto;
 }
 
 export class CreateItemDto extends PickType(ReadItemDTO, [
   'name',
   'type',
 ] as const) {
-  parentId: string;
+  parentId: string | undefined;
 }
 
 export class UpdateItemDTO extends PartialType(

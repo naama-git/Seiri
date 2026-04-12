@@ -10,26 +10,26 @@ import {
 @Entity('file-metadata')
 export class FileMetadata {
   @PrimaryGeneratedColumn('uuid')
-  id: number;
+  id!: number;
 
   @OneToOne(() => FileSystemItem, (item) => item.metadata)
   @JoinColumn({ name: 'item_id' })
-  item: FileSystemItem;
+  item!: FileSystemItem;
 
   @Column({ nullable: false, type: 'bigint' })
-  size: number;
+  size!: number;
 
   @Column({ nullable: false, name: 'MIME_type' })
-  mimeType: string;
+  mimeType!: string;
 
   @Column({ nullable: false })
-  extension: string;
+  extension!: string;
 
   @Column()
-  s3_key: string;
+  s3_key?: string;
 
   @Column({ type: 'jsonb', default: {} })
-  ai_results: {
+  ai_results?: {
     tags?: string[];
     summary?: string;
     detected_language?: string;
@@ -37,5 +37,5 @@ export class FileMetadata {
   };
 
   @Column({ default: false })
-  is_processed: boolean;
+  is_processed?: boolean;
 }

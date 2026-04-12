@@ -1,8 +1,8 @@
-import { ReadFileSystemItemDto } from 'src/file-system-item/file-system-item.dto';
+import { ReadItemDTO } from 'src/file-system-item/file-system-item.dto';
 
 export class ReadFileDto {
   id: string;
-  item: ReadFileSystemItemDto;
+  item: ReadItemDTO;
   size: number;
   mimeType: string;
   extension: string;

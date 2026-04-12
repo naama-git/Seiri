@@ -11,29 +11,29 @@ import { Expose } from 'class-transformer';
 
 export class ReadUserDto {
   @Expose()
-  readonly id: string;
+  readonly id!: string;
 
   @Expose()
   @MaxLength(100)
   @IsString()
-  readonly firstName: string;
+  readonly firstName!: string;
 
   @Expose()
   @MaxLength(100)
   @IsString()
-  readonly lastName: string;
+  readonly lastName!: string;
 
   @Expose()
   @IsEmail()
-  readonly email: string;
+  readonly email!: string;
 
   @Expose()
   @IsEnum(Role)
-  readonly role: Role;
+  readonly role!: Role;
 
   @Expose()
   @IsBoolean()
-  readonly isActive: boolean;
+  readonly isActive!: boolean;
 }
 
 export class CreateUserDto extends OmitType(ReadUserDto, [
@@ -43,7 +43,7 @@ export class CreateUserDto extends OmitType(ReadUserDto, [
 ]) {
   @IsString()
   @MaxLength(255)
-  readonly password: string;
+  readonly password!: string;
 }
 
 export class UpdateUserDto extends PartialType(

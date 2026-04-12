@@ -20,19 +20,19 @@ export enum Role {
 @Entity('users')
 export class User {
   @PrimaryGeneratedColumn('uuid')
-  id: string;
+  id!: string;
 
   @Column({ nullable: false, length: 100, name: 'first_name' })
-  firstName: string;
+  firstName!: string;
 
   @Column({ nullable: false, length: 100, name: 'last_name' })
-  lastName: string;
+  lastName!: string;
 
   @Column({ nullable: false, length: 255, select: false })
-  password: string;
+  password!: string;
 
   @Column({ nullable: false, unique: true })
-  email: string;
+  email!: string;
 
   @Column({
     nullable: false,
@@ -40,18 +40,18 @@ export class User {
     enum: Role,
     default: Role.USER,
   })
-  role: Role;
+  role!: Role;
 
   @OneToOne(() => FileSystemItem, { cascade: true })
   @JoinColumn({ name: 'root_folder_id' })
-  rootFolder: FileSystemItem;
+  rootFolder!: FileSystemItem;
 
   @OneToMany(() => FileSystemItem, (item) => item.owner)
-  items: FileSystemItem[];
+  items!: FileSystemItem[];
 
   @CreateDateColumn()
-  created_at: Date;
+  created_at!: Date;
 
   @DeleteDateColumn()
-  deleted_at: Date;
+  deleted_at!: Date;
 }
