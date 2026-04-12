@@ -127,7 +127,7 @@ export class FileSystemItemService {
     return savedClone;
   }
 
-  // ─── Public API ───────────────────────────────────────────────────────────
+  // ─── Public API ───
 
   async createFileSystemItem(item: CreateItemDto, userId: string) {
     const user = await this.userService.findRawUserById(userId);

@@ -4,6 +4,7 @@ import {
   IsEmail,
   IsEnum,
   IsString,
+  IsUUID,
   MaxLength,
 } from 'class-validator';
 import { Role } from './user.entity';
@@ -11,6 +12,7 @@ import { Expose } from 'class-transformer';
 
 export class ReadUserDto {
   @Expose()
+  @IsUUID()
   readonly id!: string;
 
   @Expose()

@@ -1,5 +1,12 @@
 import { Expose } from 'class-transformer';
-import { IsEnum, IsNotEmpty, IsString, MaxLength } from 'class-validator';
+import {
+  IsEnum,
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+  IsUUID,
+  MaxLength,
+} from 'class-validator';
 import { ReadUserDto } from '@/user/User.dto';
 import { ItemType } from './file-system-item.entity';
 import { OmitType, PartialType, PickType } from '@nestjs/swagger';
@@ -7,7 +14,7 @@ import { ReadFileDto } from '@/file/file.dto';
 
 export class ReadItemDTO {
   @Expose()
-  @IsString()
+  @IsUUID()
   @IsNotEmpty()
   id!: string;
 
@@ -50,5 +57,17 @@ export class CreateItemDto extends PickType(ReadItemDTO, [
 }
 
 export class UpdateItemDTO extends PartialType(
-  OmitType(ReadItemDTO, ['id', 'type', 'created_at', 'owner'] as const),
+  PickType(ReadItemDTO, ['name'] as const),
 ) {}
+
+export class MoveItemDTO {
+  @IsOptional()
+  @IsUUID()
+  newParentId: string | null = null;
+}
+
+export class CopyItemDTO {
+  @IsOptional()
+  @IsUUID()
+  newParentId: string | null = null;
+}
