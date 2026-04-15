@@ -9,7 +9,7 @@ import {
 } from 'class-validator';
 import { ReadUserDto } from '@/user/User.dto';
 import { ItemType } from './file-system-item.entity';
-import { OmitType, PartialType, PickType } from '@nestjs/swagger';
+import { PartialType, PickType } from '@nestjs/swagger';
 import { ReadFileDto } from '@/file/file.dto';
 
 export class ReadItemDTO {
@@ -53,6 +53,7 @@ export class CreateItemDto extends PickType(ReadItemDTO, [
   'name',
   'type',
 ] as const) {
+  @IsUUID()
   parentId: string | undefined;
 }
 

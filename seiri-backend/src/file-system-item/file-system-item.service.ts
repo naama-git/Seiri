@@ -5,6 +5,7 @@ import { FileSystemItem, ItemType } from './file-system-item.entity';
 import { IsNull, TreeRepository } from 'typeorm';
 import { BusinessException } from '@/core/exception.model';
 import { UserService } from '../user/user.service';
+import { User } from '@/user/user.entity';
 
 @Injectable()
 export class FileSystemItemService {
@@ -88,7 +89,7 @@ export class FileSystemItemService {
   private async deepCopyItem(
     source: FileSystemItem,
     newParent: FileSystemItem | null,
-    owner: import('../user/user.entity').User,
+    owner: User,
   ): Promise<FileSystemItem> {
     // Load children if not already loaded
     const sourceWithChildren = await this.itemRepository.findOne({
@@ -218,7 +219,7 @@ export class FileSystemItemService {
     if (!rootFolder) {
       rootFolder = await this.createRootFolder(userId);
     }
-
+    console.log(rootFolder);
     return rootFolder;
   }
 

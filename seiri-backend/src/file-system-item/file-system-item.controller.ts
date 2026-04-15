@@ -10,6 +10,7 @@ import {
 import { FileSystemItemService } from './file-system-item.service';
 import {
   CopyItemDTO,
+  CreateItemDto,
   MoveItemDTO,
   ReadItemDTO,
   UpdateItemDTO,
@@ -63,6 +64,16 @@ export class FileSystemItemController {
   ): Promise<{ size: number }> {
     const size = await this.itemService.getSize(id, user.userId);
     return { size };
+  }
+
+  @serialize(ReadItemDTO)
+  @ApiOperation({ summary: 'Create new item' })
+  @Post()
+  async createItem(
+    @Body() dto: CreateItemDto,
+    @currentUser() user: AuthenticatedUser,
+  ) {
+    return await this.itemService.createFileSystemItem(dto, user.userId);
   }
 
   @serialize(ReadItemDTO)
