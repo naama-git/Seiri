@@ -328,9 +328,10 @@ export class FileSystemItemService {
 
   async moveFileSystemItem(
     id: string,
-    newParentId: string | null,
+    newParentId: string,
     userId: string,
   ): Promise<FileSystemItem> {
+    const user = this.userService.findRawUserById(userId);
     const item = await this.assertItemOwnership(id, userId);
 
     if (!item.parent && item.type === ItemType.FOLDER) {
@@ -343,49 +344,44 @@ export class FileSystemItemService {
       );
     }
 
-    if (newParentId === null) {
-      // Moving to root level — verify there is no other root folder collision
-      item.parent = null;
-    } else {
-      if (newParentId === id) {
-        throw new BusinessException(
-          'Invalid operation',
-          400,
-          'An item cannot be moved into itself',
-          this.moveFileSystemItem.name,
-          this.constructor.name,
-        );
-      }
-
-      // Cycle guard: target must not be a descendant of the item being moved
-      await this.assertNotAncestor(id, newParentId);
-
-      const newParent = await this.itemRepository.findOne({
-        where: { id: newParentId, owner: { id: userId } },
-      });
-
-      if (!newParent) {
-        throw new BusinessException(
-          'Parent not found',
-          404,
-          `Target folder with id ${newParentId} not found`,
-          this.moveFileSystemItem.name,
-          this.constructor.name,
-        );
-      }
-
-      if (newParent.type !== ItemType.FOLDER) {
-        throw new BusinessException(
-          'Invalid parent',
-          400,
-          'Move target must be a folder',
-          this.moveFileSystemItem.name,
-          this.constructor.name,
-        );
-      }
-
-      item.parent = newParent;
+    if (newParentId === id) {
+      throw new BusinessException(
+        'Invalid operation',
+        400,
+        'An item cannot be moved into itself',
+        this.moveFileSystemItem.name,
+        this.constructor.name,
+      );
     }
+
+    // Cycle guard: target must not be a descendant of the item being moved
+    await this.assertNotAncestor(id, newParentId);
+
+    const newParent = await this.itemRepository.findOne({
+      where: { id: newParentId, owner: { id: userId } },
+    });
+
+    if (!newParent) {
+      throw new BusinessException(
+        'Parent not found',
+        404,
+        `Target folder with id ${newParentId} not found`,
+        this.moveFileSystemItem.name,
+        this.constructor.name,
+      );
+    }
+
+    if (newParent.type !== ItemType.FOLDER) {
+      throw new BusinessException(
+        'Invalid parent',
+        400,
+        'Move target must be a folder',
+        this.moveFileSystemItem.name,
+        this.constructor.name,
+      );
+    }
+
+    item.parent = newParent;
 
     try {
       return await this.itemRepository.save(item);

@@ -64,11 +64,10 @@ export class UpdateItemDTO extends PartialType(
 export class MoveItemDTO {
   @IsOptional()
   @IsUUID()
-  newParentId: string | null = null;
+  newParentId!: string;
 }
 
 export class CopyItemDTO {
-  @IsOptional()
   @IsUUID()
-  newParentId: string | null = null;
+  newParentId!: string;
 }
