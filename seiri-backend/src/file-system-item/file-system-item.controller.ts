@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   Param,
   Patch,
@@ -120,5 +121,18 @@ export class FileSystemItemController {
       dto.newParentId,
       user.userId,
     );
+  }
+
+  @serialize(ReadItemDTO)
+  @ApiOperation({
+    summary: 'Delete an item',
+  })
+  @ApiParam({ name: 'id', description: 'FileSystemItem UUID' })
+  @Delete(':id')
+  async deleteItem(
+    @Param('id') id: string,
+    @currentUser() user: AuthenticatedUser,
+  ) {
+    return this.itemService.softDeleteFileSystemItem(id, user.userId);
   }
 }
