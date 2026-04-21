@@ -1,28 +1,46 @@
+import { PickType } from '@nestjs/swagger';
+import { Expose } from 'class-transformer';
+import { IsBoolean, isNumber, IsString, IsUUID } from 'class-validator';
 import { ReadItemDTO } from 'src/file-system-item/file-system-item.dto';
 
 export class ReadFileDto {
-  id: string;
-  item: ReadItemDTO;
-  size: number;
-  mimeType: string;
-  extension: string;
-  s3_key: string;
-  ai_results: {
-    tags?: string[];
-    summary?: string;
-  };
-  is_processed: boolean;
+  @Expose()
+  @IsUUID()
+  id!: string;
+
+  @Expose()
+  item!: ReadItemDTO;
+
+  @Expose()
+  size!: number;
+
+  @Expose()
+  @IsString()
+  mimeType!: string;
+
+  @Expose()
+  @IsString()
+  extension!: string;
+
+  @Expose()
+  @IsString()
+  s3_key: string | undefined;
+
+  @Expose()
+  ai_results:
+    | {
+        tags?: string[];
+        summary?: string;
+      }
+    | undefined;
+
+  @Expose()
+  @IsBoolean()
+  is_processed: boolean | undefined;
 }
 
-export class ReadFileMetadataDtoForItem {
-  id: string;
-  size: number;
-  mimeType: string;
-  extension: string;
-  s3_key: string;
-  ai_results: {
-    tags?: string[];
-    summary?: string;
-  };
-  is_processed: boolean;
-}
+export class CraeteFileDto extends PickType(ReadFileDto, [
+  'mimeType',
+  'size',
+  'extension',
+]) {}

@@ -3,29 +3,44 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { FileMetadata } from './file.entity';
 import { BusinessException } from 'src/core/exception.model';
+import { CraeteFileDto } from './file.dto';
+import { UserService } from '@/user/user.service';
+import { FileSystemItem } from '@/file-system-item/file-system-item.entity';
 
 @Injectable()
 export class FileService {
   constructor(
     @InjectRepository(FileMetadata)
     private readonly fileRepository: Repository<FileMetadata>,
+    private readonly userService: UserService,
   ) {}
 
-  async getAllFiles(userId: string): Promise<FileMetadata[]> {
+  async createFile(dto: CraeteFileDto, userId: string, item: FileSystemItem) {
+    const user = await this.userService.findRawUserById(userId);
+    if (!user) {
+      throw new BusinessException(
+        'User not found',
+        404,
+        `User with id ${userId} was not found`,
+        this.createFile.name,
+        this.constructor.name,
+      );
+    }
+    const file = this.fileRepository.create({
+      mimeType: dto.mimeType,
+      extension: dto.extension,
+      size: dto.size,
+      item,
+    });
+
     try {
-      const files = await this.fileRepository.find({
-        where: { item: { owner: { id: userId } } },
-      });
-      if (!files) {
-        return [];
-      }
-      return files;
+      return await this.fileRepository.save(file);
     } catch (error) {
       throw new BusinessException(
-        'Database error',
-        400,
+        'Internal server error',
+        500,
         (error as Error).message,
-        this.getAllFiles.name,
+        this.createFile.name,
         this.constructor.name,
       );
     }

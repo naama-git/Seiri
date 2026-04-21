@@ -2,10 +2,11 @@ import { Injectable } from '@nestjs/common';
 import { CreateItemDto, UpdateItemDTO } from './file-system-item.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { FileSystemItem, ItemType } from './file-system-item.entity';
-import { IsNull, TreeRepository } from 'typeorm';
+import { DataSource, IsNull, TreeRepository } from 'typeorm';
 import { BusinessException } from '@/core/exception.model';
 import { UserService } from '../user/user.service';
 import { User } from '@/user/user.entity';
+import { FileService } from '@/file/file.service';
 
 @Injectable()
 export class FileSystemItemService {
@@ -13,6 +14,8 @@ export class FileSystemItemService {
     @InjectRepository(FileSystemItem)
     private readonly itemRepository: TreeRepository<FileSystemItem>,
     private readonly userService: UserService,
+    private readonly fileService: FileService,
+    private dataSource: DataSource,
   ) {}
 
   // ─── Private Helpers ──────────────────────────────────────────────────────
@@ -130,7 +133,10 @@ export class FileSystemItemService {
 
   // ─── Public API ───
 
-  async createFileSystemItem(item: CreateItemDto, userId: string) {
+  async createFileSystemItem(
+    item: CreateItemDto,
+    userId: string,
+  ): Promise<FileSystemItem | undefined> {
     const user = await this.userService.findRawUserById(userId);
     if (!user) {
       throw new BusinessException(
@@ -178,7 +184,17 @@ export class FileSystemItemService {
     });
 
     try {
-      return await this.itemRepository.save(newItem);
+      if (newItem.type == ItemType.FOLDER) {
+        return await this.itemRepository.save(newItem);
+      }
+      await this.dataSource.transaction(async (menager) => {
+        const savedItem = await menager.save(newItem);
+        await this.fileService.createFile(
+          { size: 0, mimeType: '', extension: '' },
+          userId,
+          savedItem,
+        );
+      });
     } catch (error) {
       throw new BusinessException(
         'Internal server error',
@@ -224,7 +240,7 @@ export class FileSystemItemService {
   }
 
   async createRootFolder(userId: string): Promise<FileSystemItem> {
-    return this.createFileSystemItem(
+    const rootFolder = await this.createFileSystemItem(
       {
         type: ItemType.FOLDER,
         name: `root-folder-${userId}`,
@@ -232,6 +248,17 @@ export class FileSystemItemService {
       },
       userId,
     );
+
+    if (rootFolder === undefined) {
+      throw new BusinessException(
+        'Root folder is undefined',
+        404,
+        `Root folder with name root-folder-${userId} not found`,
+        this.createRootFolder.name,
+        this.constructor.name,
+      );
+    }
+    return rootFolder;
   }
 
   async getItemById(
