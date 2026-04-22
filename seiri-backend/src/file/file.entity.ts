@@ -19,7 +19,8 @@ export class FileMetadata {
   @Column({ nullable: false })
   extension!: string;
 
-  @Column()
+  // temporary
+  @Column({ nullable: true })
   s3_key?: string;
 
   @Column({ type: 'jsonb', default: {} })
