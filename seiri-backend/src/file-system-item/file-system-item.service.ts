@@ -20,29 +20,18 @@ export class FileSystemItemService {
 
   // ─── Private Helpers ──────────────────────────────────────────────────────
 
-  private async assertItemOwnership(
-    id: string,
-    userId: string,
-  ): Promise<FileSystemItem> {
+  private async assertItemOwnership(id: string, userId: string): Promise<FileSystemItem> {
     const item = await this.itemRepository.findOne({
       where: { id },
       relations: ['owner', 'metadata', 'parent'],
     });
 
     if (!item) {
-      throw new BusinessException(
-        'Item not found',
-        HttpStatus.NOT_FOUND,
-        `Item with id ${id} not found`,
-      );
+      throw new BusinessException('Item not found', HttpStatus.NOT_FOUND, `Item with id ${id} not found`);
     }
 
     if (item.owner.id !== userId) {
-      throw new BusinessException(
-        'Forbidden',
-        HttpStatus.FORBIDDEN,
-        `User ${userId} does not own item ${id}`,
-      );
+      throw new BusinessException('Forbidden', HttpStatus.FORBIDDEN, `User ${userId} does not own item ${id}`);
     }
 
     return item;
@@ -52,10 +41,7 @@ export class FileSystemItemService {
    * Guard against moving/copying an item into one of its own descendants,
    * which would create a cycle in the tree.
    */
-  private async assertNotAncestor(
-    itemId: string,
-    targetParentId: string,
-  ): Promise<void> {
+  private async assertNotAncestor(itemId: string, targetParentId: string): Promise<void> {
     // Walk up the target's ancestors to see if itemId appears
     let current = await this.itemRepository.findOne({
       where: { id: targetParentId },
@@ -95,17 +81,11 @@ export class FileSystemItemService {
     });
 
     if (!sourceWithChildren) {
-      throw new BusinessException(
-        'Item not found',
-        HttpStatus.NOT_FOUND,
-        `Item ${source.id} disappeared during copy`,
-      );
+      throw new BusinessException('Item not found', HttpStatus.NOT_FOUND, `Item ${source.id} disappeared during copy`);
     }
 
     const clone = this.itemRepository.create({
-      name: newParent
-        ? sourceWithChildren.name
-        : `${sourceWithChildren.name} (copy)`,
+      name: newParent ? sourceWithChildren.name : `${sourceWithChildren.name} (copy)`,
       type: sourceWithChildren.type,
       owner,
       parent: newParent,
@@ -125,17 +105,10 @@ export class FileSystemItemService {
 
   // ─── Public API ───
 
-  async createFileSystemItem(
-    item: CreateItemDto,
-    userId: string,
-  ): Promise<FileSystemItem | undefined> {
+  async createFileSystemItem(item: CreateItemDto, userId: string): Promise<FileSystemItem | undefined> {
     const user = await this.userService.findRawUserById(userId);
     if (!user) {
-      throw new BusinessException(
-        'User not found',
-        HttpStatus.NOT_FOUND,
-        `User with id ${userId} was not found`,
-      );
+      throw new BusinessException('User not found', HttpStatus.NOT_FOUND, `User with id ${userId} was not found`);
     }
 
     // Resolve parent if provided
@@ -175,29 +148,17 @@ export class FileSystemItemService {
       }
       await this.dataSource.transaction(async (menager) => {
         const savedItem = await menager.save(newItem);
-        await this.fileService.createFile(
-          { size: 0, mimeType: '', extension: '' },
-          userId,
-          savedItem,
-        );
+        await this.fileService.createFile({ size: 0, mimeType: '', extension: '' }, userId, savedItem);
       });
     } catch (error) {
-      throw new BusinessException(
-        'Internal server error',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-        (error as Error).message,
-      );
+      throw new BusinessException('Internal server error', HttpStatus.INTERNAL_SERVER_ERROR, (error as Error).message);
     }
   }
 
   async getRootFolder(userId: string): Promise<FileSystemItem> {
     const user = await this.userService.findRawUserById(userId);
     if (!user) {
-      throw new BusinessException(
-        'User not found',
-        HttpStatus.NOT_FOUND,
-        `User with id ${userId} not found`,
-      );
+      throw new BusinessException('User not found', HttpStatus.NOT_FOUND, `User with id ${userId} not found`);
     }
 
     // Prefer the explicit rootFolder relation on the User entity
@@ -241,21 +202,14 @@ export class FileSystemItemService {
     return rootFolder;
   }
 
-  async getItemById(
-    id: string,
-    userId: string,
-  ): Promise<FileSystemItem | FileSystemItem[]> {
+  async getItemById(id: string, userId: string): Promise<FileSystemItem | FileSystemItem[]> {
     const item = await this.itemRepository.findOne({
       where: { id, owner: { id: userId } },
       relations: ['metadata', 'owner'],
     });
 
     if (!item) {
-      throw new BusinessException(
-        'Item not found',
-        404,
-        `Item with id ${id} not found`,
-      );
+      throw new BusinessException('Item not found', 404, `Item with id ${id} not found`);
     }
 
     if (item.type === ItemType.FOLDER) {
@@ -269,20 +223,12 @@ export class FileSystemItemService {
     return item;
   }
 
-  async updateFileSystemItem(
-    id: string,
-    dto: UpdateItemDTO,
-    userId: string,
-  ): Promise<FileSystemItem> {
+  async updateFileSystemItem(id: string, dto: UpdateItemDTO, userId: string): Promise<FileSystemItem> {
     const item = await this.assertItemOwnership(id, userId);
 
     // Guard: root folder cannot be renamed or moved
     if (!item.parent && item.type === ItemType.FOLDER) {
-      throw new BusinessException(
-        'Forbidden',
-        HttpStatus.FORBIDDEN,
-        'The root folder cannot be modified',
-      );
+      throw new BusinessException('Forbidden', HttpStatus.FORBIDDEN, 'The root folder cannot be modified');
     }
 
     if (dto.name !== undefined) {
@@ -292,11 +238,7 @@ export class FileSystemItemService {
     try {
       return await this.itemRepository.save(item);
     } catch (error) {
-      throw new BusinessException(
-        'Internal server error',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-        (error as Error).message,
-      );
+      throw new BusinessException('Internal server error', HttpStatus.INTERNAL_SERVER_ERROR, (error as Error).message);
     }
   }
 
@@ -305,46 +247,26 @@ export class FileSystemItemService {
 
     // Guard: root folder must not be deleted
     if (!item.parent && item.type === ItemType.FOLDER) {
-      throw new BusinessException(
-        'Forbidden',
-        HttpStatus.FORBIDDEN,
-        'The root folder cannot be deleted',
-      );
+      throw new BusinessException('Forbidden', HttpStatus.FORBIDDEN, 'The root folder cannot be deleted');
     }
     //soft delete
     try {
       await this.itemRepository.softRemove(item);
     } catch (error) {
-      throw new BusinessException(
-        'Internal server error',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-        (error as Error).message,
-      );
+      throw new BusinessException('Internal server error', HttpStatus.INTERNAL_SERVER_ERROR, (error as Error).message);
     }
   }
 
-  async moveFileSystemItem(
-    id: string,
-    newParentId: string,
-    userId: string,
-  ): Promise<FileSystemItem> {
+  async moveFileSystemItem(id: string, newParentId: string, userId: string): Promise<FileSystemItem> {
     // const user = this.userService.findRawUserById(userId);
     const item = await this.assertItemOwnership(id, userId);
 
     if (!item.parent && item.type === ItemType.FOLDER) {
-      throw new BusinessException(
-        'Forbidden',
-        HttpStatus.FORBIDDEN,
-        'The root folder cannot be moved',
-      );
+      throw new BusinessException('Forbidden', HttpStatus.FORBIDDEN, 'The root folder cannot be moved');
     }
 
     if (newParentId === id) {
-      throw new BusinessException(
-        'Invalid operation',
-        HttpStatus.NOT_FOUND,
-        'An item cannot be moved into itself',
-      );
+      throw new BusinessException('Invalid operation', HttpStatus.NOT_FOUND, 'An item cannot be moved into itself');
     }
 
     // Cycle guard: target must not be a descendant of the item being moved
@@ -363,11 +285,7 @@ export class FileSystemItemService {
     }
 
     if (newParent.type !== ItemType.FOLDER) {
-      throw new BusinessException(
-        'Invalid parent',
-        HttpStatus.BAD_REQUEST,
-        'Move target must be a folder',
-      );
+      throw new BusinessException('Invalid parent', HttpStatus.BAD_REQUEST, 'Move target must be a folder');
     }
 
     item.parent = newParent;
@@ -375,26 +293,14 @@ export class FileSystemItemService {
     try {
       return await this.itemRepository.save(item);
     } catch (error) {
-      throw new BusinessException(
-        'Internal server error',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-        (error as Error).message,
-      );
+      throw new BusinessException('Internal server error', HttpStatus.INTERNAL_SERVER_ERROR, (error as Error).message);
     }
   }
 
-  async copyFileSystemItem(
-    id: string,
-    newParentId: string | null,
-    userId: string,
-  ): Promise<FileSystemItem> {
+  async copyFileSystemItem(id: string, newParentId: string | null, userId: string): Promise<FileSystemItem> {
     const user = await this.userService.findRawUserById(userId);
     if (!user) {
-      throw new BusinessException(
-        'User not found',
-        HttpStatus.NOT_FOUND,
-        `User with id ${userId} not found`,
-      );
+      throw new BusinessException('User not found', HttpStatus.NOT_FOUND, `User with id ${userId} not found`);
     }
 
     const item = await this.assertItemOwnership(id, userId);
@@ -427,11 +333,7 @@ export class FileSystemItemService {
       }
 
       if (newParent.type !== ItemType.FOLDER) {
-        throw new BusinessException(
-          'Invalid parent',
-          HttpStatus.BAD_REQUEST,
-          'Copy destination must be a folder',
-        );
+        throw new BusinessException('Invalid parent', HttpStatus.BAD_REQUEST, 'Copy destination must be a folder');
       }
     }
 
@@ -439,11 +341,7 @@ export class FileSystemItemService {
       return await this.deepCopyItem(item, newParent, user);
     } catch (error) {
       if (error instanceof BusinessException) throw error;
-      throw new BusinessException(
-        'Internal server error',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-        (error as Error).message,
-      );
+      throw new BusinessException('Internal server error', HttpStatus.INTERNAL_SERVER_ERROR, (error as Error).message);
     }
   }
 

@@ -18,11 +18,7 @@ export class FileService {
   async createFile(dto: CraeteFileDto, userId: string, item: FileSystemItem) {
     const user = await this.userService.findRawUserById(userId);
     if (!user) {
-      throw new BusinessException(
-        'User not found',
-        HttpStatus.NOT_FOUND,
-        `User with id ${userId} was not found`,
-      );
+      throw new BusinessException('User not found', HttpStatus.NOT_FOUND, `User with id ${userId} was not found`);
     }
     const file = this.fileRepository.create({
       mimeType: dto.mimeType,
@@ -34,22 +30,14 @@ export class FileService {
     try {
       return await this.fileRepository.save(file);
     } catch (error) {
-      throw new BusinessException(
-        'Internal server error',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-        (error as Error).message,
-      );
+      throw new BusinessException('Internal server error', HttpStatus.INTERNAL_SERVER_ERROR, (error as Error).message);
     }
   }
 
   async readFile(itemId: string): Promise<FileMetadata> {
     const file = await this.fileRepository.findOneBy({ item: { id: itemId } });
     if (!file || file === undefined) {
-      throw new BusinessException(
-        'File not found',
-        HttpStatus.NOT_FOUND,
-        `File with itemId ${itemId} not found`,
-      );
+      throw new BusinessException('File not found', HttpStatus.NOT_FOUND, `File with itemId ${itemId} not found`);
     }
     return file;
   }
