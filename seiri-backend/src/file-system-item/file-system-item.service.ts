@@ -2,7 +2,7 @@ import { HttpStatus, Injectable } from '@nestjs/common';
 import { CreateItemDto, UpdateItemDTO } from './file-system-item.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { FileSystemItem, ItemType } from './file-system-item.entity';
-import { DataSource, IsNull, TreeRepository } from 'typeorm';
+import { DataSource, EntityManager, IsNull, TreeRepository } from 'typeorm';
 import { BusinessException } from '@/core/exception.model';
 import { UserService } from '../user/user.service';
 import { User } from '@/user/user.entity';
@@ -65,10 +65,8 @@ export class FileSystemItemService {
     }
   }
 
-  /**
-   * Recursively clone an item and all its children under a new parent.
-   * Returns the saved root of the clone tree.
-   */
+  // Recursively clone an item and all its children under a new parent.
+  // Returns the saved root of the clone tree.
   private async deepCopyItem(
     source: FileSystemItem,
     newParent: FileSystemItem | null,
@@ -103,9 +101,15 @@ export class FileSystemItemService {
     return savedClone;
   }
 
-  // ─── Public API ───
+  // ────── Public API ──────
 
-  async createFileSystemItem(item: CreateItemDto, userId: string): Promise<FileSystemItem | undefined> {
+  // ---- create ----
+  async createFileSystemItem(
+    item: CreateItemDto,
+    userId: string,
+    entityManager?: EntityManager,
+  ): Promise<FileSystemItem | undefined> {
+    const repo = entityManager ? entityManager.getRepository(FileSystemItem) : this.itemRepository;
     const user = await this.userService.findRawUserById(userId);
     if (!user) {
       throw new BusinessException('User not found', HttpStatus.NOT_FOUND, `User with id ${userId} was not found`);
@@ -114,7 +118,7 @@ export class FileSystemItemService {
     // Resolve parent if provided
     let parent: FileSystemItem | null = null;
     if (item.parentId) {
-      parent = await this.itemRepository.findOne({
+      parent = await repo.findOne({
         where: { id: item.parentId, owner: { id: userId } },
       });
 
@@ -135,7 +139,7 @@ export class FileSystemItemService {
       }
     }
 
-    const newItem = this.itemRepository.create({
+    const newItem = repo.create({
       name: item.name,
       type: item.type,
       owner: user,
@@ -155,6 +159,7 @@ export class FileSystemItemService {
     }
   }
 
+  // ---- get root folder ----
   async getRootFolder(userId: string): Promise<FileSystemItem> {
     const user = await this.userService.findRawUserById(userId);
     if (!user) {
@@ -182,6 +187,7 @@ export class FileSystemItemService {
     return rootFolder;
   }
 
+  // ---- create root folder ----
   async createRootFolder(userId: string): Promise<FileSystemItem> {
     const rootFolder = await this.createFileSystemItem(
       {
@@ -202,6 +208,7 @@ export class FileSystemItemService {
     return rootFolder;
   }
 
+  // ---- get item by id ----
   async getItemById(id: string, userId: string): Promise<FileSystemItem | FileSystemItem[]> {
     const item = await this.itemRepository.findOne({
       where: { id, owner: { id: userId } },
@@ -223,6 +230,7 @@ export class FileSystemItemService {
     return item;
   }
 
+  // ---- update ----
   async updateFileSystemItem(id: string, dto: UpdateItemDTO, userId: string): Promise<FileSystemItem> {
     const item = await this.assertItemOwnership(id, userId);
 
@@ -242,23 +250,44 @@ export class FileSystemItemService {
     }
   }
 
-  async softDeleteFileSystemItem(id: string, userId: string): Promise<void> {
-    const item = await this.assertItemOwnership(id, userId);
+  // ---- move to recycle bin ----
+  async moveItemIntoRecycleBin(id: string, userId: string): Promise<void> {
+    await this.dataSource.transaction(async (manager) => {
+      let recycleBin =
+        (await manager.findOne(FileSystemItem, {
+          where: { name: `recyle-bin-${userId}` },
+        })) || undefined;
 
-    // Guard: root folder must not be deleted
-    if (!item.parent && item.type === ItemType.FOLDER) {
-      throw new BusinessException('Forbidden', HttpStatus.FORBIDDEN, 'The root folder cannot be deleted');
-    }
-    //soft delete
+      if (!recycleBin || recycleBin === undefined) {
+        recycleBin = await this.createFileSystemItem(
+          { type: ItemType.FOLDER, name: `recyle-bin-${userId}`, parentId: undefined },
+          userId,
+          manager,
+        );
+      }
+      if (recycleBin) {
+        await this.moveFileSystemItem(id, recycleBin.id, userId, manager);
+      }
+    });
+  }
+
+  // ---- delete permanently ----
+  async permanentlyDelete(id: string, userId: string): Promise<void> {
+    const item = await this.assertItemOwnership(id, userId);
     try {
-      await this.itemRepository.softRemove(item);
+      await this.itemRepository.remove(item);
     } catch (error) {
-      throw new BusinessException('Internal server error', HttpStatus.INTERNAL_SERVER_ERROR, (error as Error).message);
+      throw new BusinessException('Internal Server Error', 500, (error as Error).message);
     }
   }
 
-  async moveFileSystemItem(id: string, newParentId: string, userId: string): Promise<FileSystemItem> {
-    // const user = this.userService.findRawUserById(userId);
+  // ---- move ----
+  async moveFileSystemItem(
+    id: string,
+    newParentId: string,
+    userId: string,
+    entityManager?: EntityManager,
+  ): Promise<FileSystemItem> {
     const item = await this.assertItemOwnership(id, userId);
 
     if (!item.parent && item.type === ItemType.FOLDER) {
@@ -272,7 +301,8 @@ export class FileSystemItemService {
     // Cycle guard: target must not be a descendant of the item being moved
     await this.assertNotAncestor(id, newParentId);
 
-    const newParent = await this.itemRepository.findOne({
+    const repo = entityManager ? entityManager.getRepository(FileSystemItem) : this.itemRepository;
+    const newParent = await repo.findOne({
       where: { id: newParentId, owner: { id: userId } },
     });
 
@@ -291,12 +321,13 @@ export class FileSystemItemService {
     item.parent = newParent;
 
     try {
-      return await this.itemRepository.save(item);
+      return await repo.save(item);
     } catch (error) {
       throw new BusinessException('Internal server error', HttpStatus.INTERNAL_SERVER_ERROR, (error as Error).message);
     }
   }
 
+  // ---- copy ----
   async copyFileSystemItem(id: string, newParentId: string | null, userId: string): Promise<FileSystemItem> {
     const user = await this.userService.findRawUserById(userId);
     if (!user) {
@@ -345,6 +376,7 @@ export class FileSystemItemService {
     }
   }
 
+  // ---- size ----
   async getSize(id: string, userId: string): Promise<number> {
     const item = await this.assertItemOwnership(id, userId);
 

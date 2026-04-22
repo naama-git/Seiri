@@ -1,28 +1,8 @@
-import {
-  Body,
-  Controller,
-  Delete,
-  Get,
-  Param,
-  Patch,
-  Post,
-  UseGuards,
-} from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, UseGuards } from '@nestjs/common';
 import { FileSystemItemService } from './file-system-item.service';
-import {
-  CopyItemDTO,
-  CreateItemDto,
-  MoveItemDTO,
-  ReadItemDTO,
-  UpdateItemDTO,
-} from './file-system-item.dto';
+import { CopyItemDTO, CreateItemDto, MoveItemDTO, ReadItemDTO, UpdateItemDTO } from './file-system-item.dto';
 import { serialize } from '../core/mapper.interceptor';
-import {
-  ApiBearerAuth,
-  ApiOperation,
-  ApiParam,
-  ApiTags,
-} from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOperation, ApiParam, ApiTags } from '@nestjs/swagger';
 import { AuthGuard } from '@nestjs/passport';
 import { currentUser } from '@/auth/current-user.decorator';
 import type { AuthenticatedUser } from '@/auth/auth.interface';
@@ -47,10 +27,7 @@ export class FileSystemItemController {
   })
   @ApiParam({ name: 'id', description: 'FileSystemItem UUID' })
   @Get(':id')
-  async getItemById(
-    @Param('id') id: string,
-    @currentUser() user: AuthenticatedUser,
-  ) {
+  async getItemById(@Param('id') id: string, @currentUser() user: AuthenticatedUser) {
     return this.itemService.getItemById(id, user.userId);
   }
 
@@ -59,10 +36,7 @@ export class FileSystemItemController {
   })
   @ApiParam({ name: 'id', description: 'FileSystemItem UUID' })
   @Get(':id/size')
-  async getSize(
-    @Param('id') id: string,
-    @currentUser() user: AuthenticatedUser,
-  ): Promise<{ size: number }> {
+  async getSize(@Param('id') id: string, @currentUser() user: AuthenticatedUser): Promise<{ size: number }> {
     const size = await this.itemService.getSize(id, user.userId);
     return { size };
   }
@@ -70,10 +44,7 @@ export class FileSystemItemController {
   @serialize(ReadItemDTO)
   @ApiOperation({ summary: 'Create new item' })
   @Post()
-  async createItem(
-    @Body() dto: CreateItemDto,
-    @currentUser() user: AuthenticatedUser,
-  ) {
+  async createItem(@Body() dto: CreateItemDto, @currentUser() user: AuthenticatedUser) {
     return await this.itemService.createFileSystemItem(dto, user.userId);
   }
 
@@ -81,11 +52,7 @@ export class FileSystemItemController {
   @ApiOperation({ summary: 'Update an item (rename)' })
   @ApiParam({ name: 'id', description: 'FileSystemItem UUID' })
   @Patch(':id')
-  async updateItem(
-    @Param('id') id: string,
-    @Body() dto: UpdateItemDTO,
-    @currentUser() user: AuthenticatedUser,
-  ) {
+  async updateItem(@Param('id') id: string, @Body() dto: UpdateItemDTO, @currentUser() user: AuthenticatedUser) {
     return this.itemService.updateFileSystemItem(id, dto, user.userId);
   }
 
@@ -93,16 +60,8 @@ export class FileSystemItemController {
   @ApiOperation({ summary: 'Move an item to a new parent folder' })
   @ApiParam({ name: 'id', description: 'FileSystemItem UUID' })
   @Patch(':id/move')
-  async moveItem(
-    @Param('id') id: string,
-    @Body() dto: MoveItemDTO,
-    @currentUser() user: AuthenticatedUser,
-  ) {
-    return this.itemService.moveFileSystemItem(
-      id,
-      dto.newParentId,
-      user.userId,
-    );
+  async moveItem(@Param('id') id: string, @Body() dto: MoveItemDTO, @currentUser() user: AuthenticatedUser) {
+    return this.itemService.moveFileSystemItem(id, dto.newParentId, user.userId);
   }
 
   @serialize(ReadItemDTO)
@@ -111,28 +70,7 @@ export class FileSystemItemController {
   })
   @ApiParam({ name: 'id', description: 'FileSystemItem UUID' })
   @Post(':id/copy')
-  async copyItem(
-    @Param('id') id: string,
-    @Body() dto: CopyItemDTO,
-    @currentUser() user: AuthenticatedUser,
-  ) {
-    return this.itemService.copyFileSystemItem(
-      id,
-      dto.newParentId,
-      user.userId,
-    );
-  }
-
-  @serialize(ReadItemDTO)
-  @ApiOperation({
-    summary: 'Delete an item',
-  })
-  @ApiParam({ name: 'id', description: 'FileSystemItem UUID' })
-  @Delete(':id')
-  async deleteItem(
-    @Param('id') id: string,
-    @currentUser() user: AuthenticatedUser,
-  ) {
-    return this.itemService.softDeleteFileSystemItem(id, user.userId);
+  async copyItem(@Param('id') id: string, @Body() dto: CopyItemDTO, @currentUser() user: AuthenticatedUser) {
+    return this.itemService.copyFileSystemItem(id, dto.newParentId, user.userId);
   }
 }
