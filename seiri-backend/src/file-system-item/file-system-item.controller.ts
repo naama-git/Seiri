@@ -49,6 +49,16 @@ export class FileSystemItemController {
   }
 
   @serialize(ReadItemDTO)
+  @ApiOperation({
+    summary: 'Copy an item (deep copy if folder) to a new parent',
+  })
+  @ApiParam({ name: 'id', description: 'FileSystemItem UUID' })
+  @Post(':id/copy')
+  async copyItem(@Param('id') id: string, @Body() dto: CopyItemDTO, @currentUser() user: AuthenticatedUser) {
+    return this.itemService.copyFileSystemItem(id, dto.newParentId, user.userId);
+  }
+
+  @serialize(ReadItemDTO)
   @ApiOperation({ summary: 'Update an item (rename)' })
   @ApiParam({ name: 'id', description: 'FileSystemItem UUID' })
   @Patch(':id')
@@ -64,21 +74,11 @@ export class FileSystemItemController {
     return this.itemService.moveFileSystemItem(id, dto.newParentId, user.userId);
   }
 
-  @serialize(ReadItemDTO)
-  @ApiOperation({
-    summary: 'Copy an item (deep copy if folder) to a new parent',
-  })
-  @ApiParam({ name: 'id', description: 'FileSystemItem UUID' })
-  @Post(':id/copy')
-  async copyItem(@Param('id') id: string, @Body() dto: CopyItemDTO, @currentUser() user: AuthenticatedUser) {
-    return this.itemService.copyFileSystemItem(id, dto.newParentId, user.userId);
-  }
-
   @ApiOperation({
     summary: 'Move item into recycle bin',
   })
   @ApiParam({ name: 'id', description: 'FileSystemItem UUID' })
-  @Post(':id/moveIntoRecycleBin')
+  @Delete(':id/moveIntoRecycleBin')
   async moveItemIntoRecycleBin(@Param('id') id: string, @currentUser() user: AuthenticatedUser) {
     return this.itemService.moveItemIntoRecycleBin(id, user.userId);
   }
@@ -87,7 +87,7 @@ export class FileSystemItemController {
     summary: 'Delete Item permanently',
   })
   @ApiParam({ name: 'id', description: 'FileSystemItem UUID' })
-  @Post(':id/deleteItem')
+  @Delete(':id/deleteItem')
   async deleteItem(@Param('id') id: string, @currentUser() user: AuthenticatedUser) {
     return this.itemService.permanentlyDelete(id, user.userId);
   }
