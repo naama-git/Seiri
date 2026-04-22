@@ -4,7 +4,7 @@ A full-stack personal cloud storage system featuring AI-driven organization and 
 - Backend: NestJS 
 - Frontend: Angular (Signals, RxJS)
 - Database: PostgreSQL + TypeORM
-- Cloud & AI: AWS S3, AI API
+- Cloud & AI: (AWS S3), AI API
 
 ## Design Principles
 - Direct-to-S3 Uploads: Using S3 Pre-signed URLs to offload file traffic from the server to the cloud.
@@ -30,7 +30,7 @@ A full-stack personal cloud storage system featuring AI-driven organization and 
 
 - Implementing the UI for file browsing and upload tracking.
 
-### 4. Cloud Integration (AWS S3)
+### 4. Cloud Integration (AWS S3(?))
 - Pre-signed URLs: Implementing secure, direct-to-S3 upload and download flows.
 
 - Cloud Security: Configuring S3 CORS policies and IAM permissions.
