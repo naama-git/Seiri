@@ -2,7 +2,7 @@
 A full-stack personal cloud storage system featuring AI-driven organization and Enterprise-grade architecture.
 ## Tech Stack
 - Backend: NestJS 
-- Frontend: Angular (Signals, RxJS)
+- Frontend: Angular
 - Database: PostgreSQL + TypeORM
 - Cloud & AI: (AWS S3), AI API
 
