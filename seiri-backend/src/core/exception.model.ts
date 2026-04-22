@@ -9,3 +9,10 @@ export class BusinessException extends HttpException {
     super({ message, detailedMessage }, status);
   }
 }
+
+export interface PostgreError extends Error {
+  driverError: {
+    code: string;
+    detail: string;
+  };
+}

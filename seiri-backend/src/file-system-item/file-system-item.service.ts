@@ -148,11 +148,12 @@ export class FileSystemItemService {
 
     try {
       if (newItem.type == ItemType.FOLDER) {
-        return await this.itemRepository.save(newItem);
+        return await repo.save(newItem);
       }
+
       await this.dataSource.transaction(async (menager) => {
         const savedItem = await menager.save(newItem);
-        await this.fileService.createFile({ size: 0, mimeType: '', extension: '' }, userId, savedItem);
+        await this.fileService.createFile({ size: 10, mimeType: '', extension: '' }, savedItem, menager);
       });
     } catch (error) {
       throw new BusinessException('Internal server error', HttpStatus.INTERNAL_SERVER_ERROR, (error as Error).message);
@@ -183,7 +184,6 @@ export class FileSystemItemService {
     if (!rootFolder) {
       rootFolder = await this.createRootFolder(userId);
     }
-    console.log(rootFolder);
     return rootFolder;
   }
 

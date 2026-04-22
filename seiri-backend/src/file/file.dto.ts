@@ -1,6 +1,6 @@
 import { PickType } from '@nestjs/swagger';
 import { Expose } from 'class-transformer';
-import { IsBoolean, isNumber, IsString, IsUUID } from 'class-validator';
+import { IsBoolean, IsNumber, IsString, IsUUID } from 'class-validator';
 import { ReadItemDTO } from 'src/file-system-item/file-system-item.dto';
 
 export class ReadFileDto {
@@ -12,6 +12,7 @@ export class ReadFileDto {
   item!: ReadItemDTO;
 
   @Expose()
+  @IsNumber()
   size!: number;
 
   @Expose()
@@ -39,8 +40,4 @@ export class ReadFileDto {
   is_processed: boolean | undefined;
 }
 
-export class CraeteFileDto extends PickType(ReadFileDto, [
-  'mimeType',
-  'size',
-  'extension',
-]) {}
+export class CraeteFileDto extends PickType(ReadFileDto, ['mimeType', 'size', 'extension']) {}

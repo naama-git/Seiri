@@ -16,6 +16,7 @@ import { TerminusModule } from '@nestjs/terminus/dist/terminus.module';
 import { HealthController } from './core/health.controller';
 import { AuthModule } from './auth/auth.module';
 import { FileSystemItemModule } from './file-system-item/file-system-item.module';
+import { DatabaseExceptionFilter } from './core/database-exception.filter';
 
 @Module({
   imports: [
@@ -42,6 +43,10 @@ import { FileSystemItemModule } from './file-system-item/file-system-item.module
     {
       provide: APP_FILTER,
       useClass: GlobalExceptionFilter,
+    },
+    {
+      provide: APP_FILTER,
+      useClass: DatabaseExceptionFilter,
     },
     {
       provide: APP_PIPE,
