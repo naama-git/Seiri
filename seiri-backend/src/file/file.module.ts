@@ -7,10 +7,7 @@ import { User } from '@/user/user.entity';
 import { FileSystemItem } from '@/file-system-item/file-system-item.entity';
 
 @Module({
-  imports: [
-    TypeOrmModule.forFeature([FileMetadata, User, FileSystemItem]),
-    UserModule,
-  ],
+  imports: [TypeOrmModule.forFeature([FileMetadata, User, FileSystemItem]), UserModule],
   providers: [FileService],
   exports: [FileService],
 })

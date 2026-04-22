@@ -3,7 +3,6 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { APP_FILTER, APP_GUARD, APP_PIPE } from '@nestjs/core';
 import { WinstonModule } from 'nest-winston';
-
 import databaseConfig from './core/database.config';
 import corsConfig from './core/cors.config';
 import { winstonConfig } from './core/winston.config';
@@ -28,13 +27,11 @@ import { FileSystemItemModule } from './file-system-item/file-system-item.module
     WinstonModule.forRoot(winstonConfig),
     ThrottlerModule.forRootAsync({
       inject: [ConfigService],
-      useFactory: (configService: ConfigService) =>
-        configService.get('throttler')!,
+      useFactory: (configService: ConfigService) => configService.get('throttler')!,
     }),
     TypeOrmModule.forRootAsync({
       inject: [ConfigService],
-      useFactory: (configService: ConfigService) =>
-        configService.get('database')!,
+      useFactory: (configService: ConfigService) => configService.get('database')!,
     }),
     AuthModule,
     FileSystemItemModule,

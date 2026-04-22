@@ -9,11 +9,7 @@ import { FileMetadata } from '@/file/file.entity';
 import { User } from '@/user/user.entity';
 
 @Module({
-  imports: [
-    TypeOrmModule.forFeature([FileSystemItem, FileMetadata, User]),
-    UserModule,
-    FileModule,
-  ],
+  imports: [TypeOrmModule.forFeature([FileSystemItem, FileMetadata, User]), UserModule, FileModule],
   providers: [FileSystemItemService],
   controllers: [FileSystemItemController],
   exports: [FileSystemItemService],

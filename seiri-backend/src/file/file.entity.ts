@@ -1,11 +1,5 @@
 import { FileSystemItem } from '../file-system-item/file-system-item.entity';
-import {
-  Column,
-  Entity,
-  JoinColumn,
-  OneToOne,
-  PrimaryGeneratedColumn,
-} from 'typeorm';
+import { Column, Entity, JoinColumn, OneToOne, PrimaryGeneratedColumn } from 'typeorm';
 
 @Entity('file-metadata')
 export class FileMetadata {

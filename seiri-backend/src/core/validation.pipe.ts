@@ -20,12 +20,6 @@ export const globalValidationPipe = new ValidationPipe({
       })
       .join('; ');
 
-    return new BusinessException(
-      'Validation Failed',
-      HttpStatus.BAD_REQUEST,
-      messages,
-      'GlobalValidationPipe',
-      '',
-    );
+    return new BusinessException('Validation Failed', HttpStatus.BAD_REQUEST, messages);
   },
 });

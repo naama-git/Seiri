@@ -1,10 +1,4 @@
-import {
-  Injectable,
-  NestInterceptor,
-  ExecutionContext,
-  CallHandler,
-  UseInterceptors,
-} from '@nestjs/common';
+import { Injectable, NestInterceptor, ExecutionContext, CallHandler, UseInterceptors } from '@nestjs/common';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { plainToInstance } from 'class-transformer';
@@ -24,5 +18,4 @@ export class MapToDtoInterceptor implements NestInterceptor {
   }
 }
 
-export const serialize = (dto: any) =>
-  UseInterceptors(new MapToDtoInterceptor(dto));
+export const serialize = (dto: any) => UseInterceptors(new MapToDtoInterceptor(dto));
