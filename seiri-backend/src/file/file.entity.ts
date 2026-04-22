@@ -1,7 +1,7 @@
 import { FileSystemItem } from '../file-system-item/file-system-item.entity';
 import { Column, Entity, JoinColumn, OneToOne, PrimaryGeneratedColumn } from 'typeorm';
 
-@Entity('file-metadata')
+@Entity('file_metadata')
 export class FileMetadata {
   @PrimaryGeneratedColumn('uuid')
   id!: number;

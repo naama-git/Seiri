@@ -6,6 +6,7 @@ export default registerAs(
   (): DataSourceOptions => ({
     type: 'postgres',
     host: process.env.DB_HOST,
+    logging: true,
     port: parseInt(process.env.DB_PORT || '5432', 10),
     username: process.env.DB_USERNAME,
     password: process.env.DB_PASSWORD,

@@ -104,11 +104,7 @@ export class FileSystemItemService {
   // ────── Public API ──────
 
   // ---- create ----
-  async createFileSystemItem(
-    item: CreateItemDto,
-    userId: string,
-    entityManager?: EntityManager,
-  ): Promise<FileSystemItem | undefined> {
+  async createFileSystemItem(item: CreateItemDto, userId: string, entityManager?: EntityManager) {
     const repo = entityManager ? entityManager.getRepository(FileSystemItem) : this.itemRepository;
     const user = await this.userService.findRawUserById(userId);
     if (!user) {
@@ -148,12 +144,14 @@ export class FileSystemItemService {
 
     try {
       if (newItem.type == ItemType.FOLDER) {
-        return await repo.save(newItem);
+        const savedItem = await repo.save(newItem);
+        return savedItem;
       }
 
       await this.dataSource.transaction(async (menager) => {
         const savedItem = await menager.save(newItem);
         await this.fileService.createFile({ size: 10, mimeType: '', extension: '' }, savedItem, menager);
+        return savedItem;
       });
     } catch (error) {
       throw new BusinessException('Internal server error', HttpStatus.INTERNAL_SERVER_ERROR, (error as Error).message);
