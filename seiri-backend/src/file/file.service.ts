@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { FileMetadata } from './file.entity';
@@ -20,10 +20,8 @@ export class FileService {
     if (!user) {
       throw new BusinessException(
         'User not found',
-        404,
+        HttpStatus.NOT_FOUND,
         `User with id ${userId} was not found`,
-        this.createFile.name,
-        this.constructor.name,
       );
     }
     const file = this.fileRepository.create({
@@ -38,11 +36,21 @@ export class FileService {
     } catch (error) {
       throw new BusinessException(
         'Internal server error',
-        500,
+        HttpStatus.INTERNAL_SERVER_ERROR,
         (error as Error).message,
-        this.createFile.name,
-        this.constructor.name,
       );
     }
+  }
+
+  async readFile(itemId: string): Promise<FileMetadata> {
+    const file = await this.fileRepository.findOneBy({ item: { id: itemId } });
+    if (!file || file === undefined) {
+      throw new BusinessException(
+        'File not found',
+        HttpStatus.NOT_FOUND,
+        `File with itemId ${itemId} not found`,
+      );
+    }
+    return file;
   }
 }

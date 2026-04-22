@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { HttpStatus, Injectable } from '@nestjs/common';
 import { CreateItemDto, UpdateItemDTO } from './file-system-item.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { FileSystemItem, ItemType } from './file-system-item.entity';
@@ -32,20 +32,16 @@ export class FileSystemItemService {
     if (!item) {
       throw new BusinessException(
         'Item not found',
-        404,
+        HttpStatus.NOT_FOUND,
         `Item with id ${id} not found`,
-        this.assertItemOwnership.name,
-        this.constructor.name,
       );
     }
 
     if (item.owner.id !== userId) {
       throw new BusinessException(
         'Forbidden',
-        403,
+        HttpStatus.FORBIDDEN,
         `User ${userId} does not own item ${id}`,
-        this.assertItemOwnership.name,
-        this.constructor.name,
       );
     }
 
@@ -70,10 +66,8 @@ export class FileSystemItemService {
       if (current.id === itemId) {
         throw new BusinessException(
           'Invalid operation',
-          400,
+          HttpStatus.BAD_REQUEST,
           'Cannot move an item into one of its own descendants',
-          this.assertNotAncestor.name,
-          this.constructor.name,
         );
       }
       current = current.parent
@@ -103,10 +97,8 @@ export class FileSystemItemService {
     if (!sourceWithChildren) {
       throw new BusinessException(
         'Item not found',
-        404,
+        HttpStatus.NOT_FOUND,
         `Item ${source.id} disappeared during copy`,
-        this.deepCopyItem.name,
-        this.constructor.name,
       );
     }
 
@@ -141,10 +133,8 @@ export class FileSystemItemService {
     if (!user) {
       throw new BusinessException(
         'User not found',
-        404,
+        HttpStatus.NOT_FOUND,
         `User with id ${userId} was not found`,
-        this.createFileSystemItem.name,
-        this.constructor.name,
       );
     }
 
@@ -158,20 +148,16 @@ export class FileSystemItemService {
       if (!parent) {
         throw new BusinessException(
           'Parent not found',
-          404,
+          HttpStatus.NOT_FOUND,
           `Parent folder with id ${item.parentId} not found or not owned by user`,
-          this.createFileSystemItem.name,
-          this.constructor.name,
         );
       }
 
       if (parent.type !== ItemType.FOLDER) {
         throw new BusinessException(
           'Invalid parent',
-          400,
+          HttpStatus.BAD_REQUEST,
           `Parent item ${item.parentId} is not a folder`,
-          this.createFileSystemItem.name,
-          this.constructor.name,
         );
       }
     }
@@ -198,10 +184,8 @@ export class FileSystemItemService {
     } catch (error) {
       throw new BusinessException(
         'Internal server error',
-        500,
+        HttpStatus.INTERNAL_SERVER_ERROR,
         (error as Error).message,
-        this.createFileSystemItem.name,
-        this.constructor.name,
       );
     }
   }
@@ -211,10 +195,8 @@ export class FileSystemItemService {
     if (!user) {
       throw new BusinessException(
         'User not found',
-        404,
+        HttpStatus.NOT_FOUND,
         `User with id ${userId} not found`,
-        this.getRootFolder.name,
-        this.constructor.name,
       );
     }
 
@@ -252,10 +234,8 @@ export class FileSystemItemService {
     if (rootFolder === undefined) {
       throw new BusinessException(
         'Root folder is undefined',
-        404,
+        HttpStatus.NOT_FOUND,
         `Root folder with name root-folder-${userId} not found`,
-        this.createRootFolder.name,
-        this.constructor.name,
       );
     }
     return rootFolder;
@@ -275,8 +255,6 @@ export class FileSystemItemService {
         'Item not found',
         404,
         `Item with id ${id} not found`,
-        this.getItemById.name,
-        this.constructor.name,
       );
     }
 
@@ -302,10 +280,8 @@ export class FileSystemItemService {
     if (!item.parent && item.type === ItemType.FOLDER) {
       throw new BusinessException(
         'Forbidden',
-        403,
+        HttpStatus.FORBIDDEN,
         'The root folder cannot be modified',
-        this.updateFileSystemItem.name,
-        this.constructor.name,
       );
     }
 
@@ -318,10 +294,8 @@ export class FileSystemItemService {
     } catch (error) {
       throw new BusinessException(
         'Internal server error',
-        500,
+        HttpStatus.INTERNAL_SERVER_ERROR,
         (error as Error).message,
-        this.updateFileSystemItem.name,
-        this.constructor.name,
       );
     }
   }
@@ -333,10 +307,8 @@ export class FileSystemItemService {
     if (!item.parent && item.type === ItemType.FOLDER) {
       throw new BusinessException(
         'Forbidden',
-        403,
+        HttpStatus.FORBIDDEN,
         'The root folder cannot be deleted',
-        this.softDeleteFileSystemItem.name,
-        this.constructor.name,
       );
     }
     //soft delete
@@ -345,10 +317,8 @@ export class FileSystemItemService {
     } catch (error) {
       throw new BusinessException(
         'Internal server error',
-        500,
+        HttpStatus.INTERNAL_SERVER_ERROR,
         (error as Error).message,
-        this.softDeleteFileSystemItem.name,
-        this.constructor.name,
       );
     }
   }
@@ -358,26 +328,22 @@ export class FileSystemItemService {
     newParentId: string,
     userId: string,
   ): Promise<FileSystemItem> {
-    const user = this.userService.findRawUserById(userId);
+    // const user = this.userService.findRawUserById(userId);
     const item = await this.assertItemOwnership(id, userId);
 
     if (!item.parent && item.type === ItemType.FOLDER) {
       throw new BusinessException(
         'Forbidden',
-        403,
+        HttpStatus.FORBIDDEN,
         'The root folder cannot be moved',
-        this.moveFileSystemItem.name,
-        this.constructor.name,
       );
     }
 
     if (newParentId === id) {
       throw new BusinessException(
         'Invalid operation',
-        400,
+        HttpStatus.NOT_FOUND,
         'An item cannot be moved into itself',
-        this.moveFileSystemItem.name,
-        this.constructor.name,
       );
     }
 
@@ -391,20 +357,16 @@ export class FileSystemItemService {
     if (!newParent) {
       throw new BusinessException(
         'Parent not found',
-        404,
+        HttpStatus.NOT_FOUND,
         `Target folder with id ${newParentId} not found`,
-        this.moveFileSystemItem.name,
-        this.constructor.name,
       );
     }
 
     if (newParent.type !== ItemType.FOLDER) {
       throw new BusinessException(
         'Invalid parent',
-        400,
+        HttpStatus.BAD_REQUEST,
         'Move target must be a folder',
-        this.moveFileSystemItem.name,
-        this.constructor.name,
       );
     }
 
@@ -415,10 +377,8 @@ export class FileSystemItemService {
     } catch (error) {
       throw new BusinessException(
         'Internal server error',
-        500,
+        HttpStatus.INTERNAL_SERVER_ERROR,
         (error as Error).message,
-        this.moveFileSystemItem.name,
-        this.constructor.name,
       );
     }
   }
@@ -432,10 +392,8 @@ export class FileSystemItemService {
     if (!user) {
       throw new BusinessException(
         'User not found',
-        404,
+        HttpStatus.NOT_FOUND,
         `User with id ${userId} not found`,
-        this.copyFileSystemItem.name,
-        this.constructor.name,
       );
     }
 
@@ -446,10 +404,8 @@ export class FileSystemItemService {
       if (newParentId === id) {
         throw new BusinessException(
           'Invalid operation',
-          400,
+          HttpStatus.BAD_REQUEST,
           'An item cannot be copied into itself',
-          this.copyFileSystemItem.name,
-          this.constructor.name,
         );
       }
 
@@ -465,20 +421,16 @@ export class FileSystemItemService {
       if (!newParent) {
         throw new BusinessException(
           'Parent not found',
-          404,
+          HttpStatus.NOT_FOUND,
           `Target folder with id ${newParentId} not found`,
-          this.copyFileSystemItem.name,
-          this.constructor.name,
         );
       }
 
       if (newParent.type !== ItemType.FOLDER) {
         throw new BusinessException(
           'Invalid parent',
-          400,
+          HttpStatus.BAD_REQUEST,
           'Copy destination must be a folder',
-          this.copyFileSystemItem.name,
-          this.constructor.name,
         );
       }
     }
@@ -489,10 +441,8 @@ export class FileSystemItemService {
       if (error instanceof BusinessException) throw error;
       throw new BusinessException(
         'Internal server error',
-        500,
+        HttpStatus.INTERNAL_SERVER_ERROR,
         (error as Error).message,
-        this.copyFileSystemItem.name,
-        this.constructor.name,
       );
     }
   }

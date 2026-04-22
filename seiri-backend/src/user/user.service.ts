@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { HttpStatus, Injectable } from '@nestjs/common';
 import { User, Role } from './user.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -19,10 +19,8 @@ export class UserService {
       if (!existingUser) {
         throw new BusinessException(
           'User not found',
-          404,
+          HttpStatus.NOT_FOUND,
           `User with ID ${id} not found`,
-          this.getUserById.name,
-          this.constructor.name,
         );
       }
       return existingUser;
@@ -30,10 +28,8 @@ export class UserService {
       if (error instanceof BusinessException) throw error;
       throw new BusinessException(
         'Database error',
-        400,
+        HttpStatus.INTERNAL_SERVER_ERROR,
         (error as Error).message,
-        this.getUserById.name,
-        this.constructor.name,
       );
     }
   }
@@ -41,11 +37,9 @@ export class UserService {
     const existing = await this.userRepository.findOneBy({ email: user.email });
     if (existing) {
       throw new BusinessException(
-        'Conflict',
-        409,
+        'Error in user data',
+        HttpStatus.CONFLICT,
         'User already exists',
-        this.createUser.name,
-        this.constructor.name,
       );
     }
 
@@ -59,10 +53,8 @@ export class UserService {
     } catch (error) {
       throw new BusinessException(
         'Internal Server Error',
-        500,
+        HttpStatus.INTERNAL_SERVER_ERROR,
         (error as Error).message,
-        this.createUser.name,
-        this.constructor.name,
       );
     }
   }
@@ -76,10 +68,8 @@ export class UserService {
     } catch (error) {
       throw new BusinessException(
         'Update failed',
-        500,
+        HttpStatus.INTERNAL_SERVER_ERROR,
         (error as Error).message,
-        this.updateUser.name,
-        this.constructor.name,
       );
     }
   }

@@ -1,4 +1,4 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { HttpStatus, Inject, Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt/dist/jwt.service';
 import bcrypt from 'bcrypt';
 import { BusinessException } from 'src/core/exception.model';
@@ -24,10 +24,8 @@ export class AuthService {
     if (existingUser) {
       throw new BusinessException(
         'User data error',
-        400,
+        HttpStatus.BAD_REQUEST,
         'User already exist',
-        'signIn',
-        'AuthService',
       );
     }
     const hashPass: string = await this.hashPassword(user.password);
@@ -49,10 +47,8 @@ export class AuthService {
     if (!existingUser) {
       throw new BusinessException(
         'User not found',
-        400,
+        HttpStatus.BAD_REQUEST,
         'User not found',
-        'logIn',
-        'AuthService',
       );
     }
     const isMatch = await bcrypt.compare(user.password, existingUser.password);
@@ -60,10 +56,8 @@ export class AuthService {
     if (!isMatch) {
       throw new BusinessException(
         'Authentication failed',
-        401,
+        HttpStatus.UNAUTHORIZED,
         'Invalid email or password',
-        'signIn',
-        'AuthService',
       );
     }
 
