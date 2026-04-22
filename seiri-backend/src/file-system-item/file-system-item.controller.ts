@@ -73,4 +73,22 @@ export class FileSystemItemController {
   async copyItem(@Param('id') id: string, @Body() dto: CopyItemDTO, @currentUser() user: AuthenticatedUser) {
     return this.itemService.copyFileSystemItem(id, dto.newParentId, user.userId);
   }
+
+  @ApiOperation({
+    summary: 'Move item into recycle bin',
+  })
+  @ApiParam({ name: 'id', description: 'FileSystemItem UUID' })
+  @Post(':id/moveIntoRecycleBin')
+  async moveItemIntoRecycleBin(@Param('id') id: string, @currentUser() user: AuthenticatedUser) {
+    return this.itemService.moveItemIntoRecycleBin(id, user.userId);
+  }
+
+  @ApiOperation({
+    summary: 'Delete Item permanently',
+  })
+  @ApiParam({ name: 'id', description: 'FileSystemItem UUID' })
+  @Post(':id/deleteItem')
+  async deleteItem(@Param('id') id: string, @currentUser() user: AuthenticatedUser) {
+    return this.itemService.permanentlyDelete(id, user.userId);
+  }
 }
