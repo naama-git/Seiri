@@ -28,6 +28,7 @@ export class ReadItemDTO {
 
   @Expose()
   @IsNotEmpty()
+  @Type(() => ReadItemDTO)
   parent: ReadItemDTO | undefined;
 
   @Expose()

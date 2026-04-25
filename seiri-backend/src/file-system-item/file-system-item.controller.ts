@@ -22,12 +22,21 @@ export class FileSystemItemController {
   }
 
   @serialize(ReadItemDTO)
+  @ApiOperation({ summary: 'Get Recycle Bin' })
+  @Get('recycleBin')
+  async getRecycleBin(@currentUser() user: AuthenticatedUser) {
+    return this.itemService.getRecycleBin(user.userId);
+  }
+
+  @serialize(ReadItemDTO)
   @ApiOperation({
     summary: 'Get an item by ID (returns children array if folder)',
   })
   @ApiParam({ name: 'id', description: 'FileSystemItem UUID' })
   @Get(':id')
   async getItemById(@Param('id') id: string, @currentUser() user: AuthenticatedUser) {
+    console.log('controller');
+
     return this.itemService.getItemById(id, user.userId);
   }
 

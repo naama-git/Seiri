@@ -158,6 +158,27 @@ export class FileSystemItemService {
     }
   }
 
+  // ---- create root folder ----
+  async createRootFolder(userId: string): Promise<FileSystemItem> {
+    const rootFolder = await this.createFileSystemItem(
+      {
+        type: ItemType.FOLDER,
+        name: `root-folder-${userId}`,
+        parentId: undefined,
+      },
+      userId,
+    );
+
+    if (rootFolder === undefined) {
+      throw new BusinessException(
+        'Root folder is undefined',
+        HttpStatus.NOT_FOUND,
+        `Root folder with name root-folder-${userId} id undefined`,
+      );
+    }
+    return rootFolder;
+  }
+
   // ---- get root folder ----
   async getRootFolder(userId: string): Promise<FileSystemItem> {
     const user = await this.userService.findRawUserById(userId);
@@ -176,32 +197,12 @@ export class FileSystemItemService {
         owner: { id: userId },
         parent: IsNull(),
         type: ItemType.FOLDER,
+        name: `root-folder-${userId}`,
       },
     });
 
     if (!rootFolder) {
       rootFolder = await this.createRootFolder(userId);
-    }
-    return rootFolder;
-  }
-
-  // ---- create root folder ----
-  async createRootFolder(userId: string): Promise<FileSystemItem> {
-    const rootFolder = await this.createFileSystemItem(
-      {
-        type: ItemType.FOLDER,
-        name: `root-folder-${userId}`,
-        parentId: undefined,
-      },
-      userId,
-    );
-
-    if (rootFolder === undefined) {
-      throw new BusinessException(
-        'Root folder is undefined',
-        HttpStatus.NOT_FOUND,
-        `Root folder with name root-folder-${userId} not found`,
-      );
     }
     return rootFolder;
   }
@@ -248,6 +249,36 @@ export class FileSystemItemService {
     }
   }
 
+  // ---- get recycle bin ----
+  async getRecycleBin(userId: string): Promise<FileSystemItem | FileSystemItem[] | null> {
+    let recycleBin = await this.itemRepository.findOne({
+      where: { owner: { id: userId }, name: `recyle-bin-${userId}`, parent: IsNull() },
+    });
+    if (!recycleBin) {
+      recycleBin = await this.createRecycleBin(userId);
+    }
+    return this.getItemById(recycleBin.id, userId);
+  }
+
+  async createRecycleBin(userId: string): Promise<FileSystemItem> {
+    const recycleBin = await this.createFileSystemItem(
+      {
+        type: ItemType.FOLDER,
+        name: `recycle-bin-${userId}`,
+        parentId: undefined,
+      },
+      userId,
+    );
+    if (recycleBin === undefined) {
+      throw new BusinessException(
+        'Internal Server Error',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+        'Recycle-bin returned as undefined',
+      );
+    }
+    return recycleBin;
+  }
+
   // ---- move to recycle bin ----
   async moveItemIntoRecycleBin(id: string, userId: string): Promise<void> {
     await this.dataSource.transaction(async (manager) => {
@@ -289,7 +320,7 @@ export class FileSystemItemService {
     const item = await this.assertItemOwnership(id, userId);
 
     if (!item.parent && item.type === ItemType.FOLDER) {
-      throw new BusinessException('Forbidden', HttpStatus.FORBIDDEN, 'The root folder cannot be moved');
+      throw new BusinessException('Forbidden', HttpStatus.FORBIDDEN, 'The root folder or recycle bin cannot be moved');
     }
 
     if (newParentId === id) {
