@@ -1,10 +1,5 @@
 import { Controller, Get } from '@nestjs/common';
-import {
-  HealthCheckService,
-  TypeOrmHealthIndicator,
-  HealthCheck,
-  MemoryHealthIndicator,
-} from '@nestjs/terminus';
+import { HealthCheckService, TypeOrmHealthIndicator, HealthCheck, MemoryHealthIndicator } from '@nestjs/terminus';
 import { SkipThrottle } from '@nestjs/throttler/dist/throttler.decorator';
 
 @Controller('health')

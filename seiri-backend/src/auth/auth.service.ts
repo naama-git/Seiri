@@ -1,10 +1,11 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { HttpStatus, Inject, Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt/dist/jwt.service';
 import bcrypt from 'bcrypt';
 import { BusinessException } from 'src/core/exception.model';
-import { CreateUserDto, LoginUserDTO } from 'src/user/dto/User.dto';
+import { CreateUserDto, LoginUserDTO } from 'src/user/User.dto';
 import { UserService } from 'src/user/user.service';
 import { JwtPayload, LoginResponse } from './auth.interface';
+import { User } from 'src/user/user.entity';
 
 @Injectable()
 export class AuthService {
@@ -18,15 +19,13 @@ export class AuthService {
     return await bcrypt.hash(password, 10);
   }
 
-  async register(user: CreateUserDto): Promise<void> {
-    const existingUser = await this.userService.findUserByEmail(user.email);
+  async register(user: CreateUserDto): Promise<User> {
+    const existingUser = await this.userService.findRawUserByEmail(user.email);
     if (existingUser) {
       throw new BusinessException(
         'User data error',
-        400,
+        HttpStatus.BAD_REQUEST,
         'User already exist',
-        'signIn',
-        'AuthService',
       );
     }
     const hashPass: string = await this.hashPassword(user.password);
@@ -44,14 +43,12 @@ export class AuthService {
   }
 
   async logIn(user: LoginUserDTO): Promise<LoginResponse> {
-    const existingUser = await this.userService.findUserByEmail(user.email);
+    const existingUser = await this.userService.findRawUserByEmail(user.email);
     if (!existingUser) {
       throw new BusinessException(
         'User not found',
-        400,
+        HttpStatus.BAD_REQUEST,
         'User not found',
-        'logIn',
-        'AuthService',
       );
     }
     const isMatch = await bcrypt.compare(user.password, existingUser.password);
@@ -59,15 +56,13 @@ export class AuthService {
     if (!isMatch) {
       throw new BusinessException(
         'Authentication failed',
-        401,
+        HttpStatus.UNAUTHORIZED,
         'Invalid email or password',
-        'signIn',
-        'AuthService',
       );
     }
 
     const payload: JwtPayload = {
-      username: existingUser.firstName+' '+existingUser.lastName,
+      username: existingUser.firstName + ' ' + existingUser.lastName,
       sub: existingUser.id,
       role: existingUser.role,
     };

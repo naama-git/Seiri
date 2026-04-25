@@ -1,12 +1,9 @@
-import {
-  Injectable,
-  NotFoundException,
-  UnauthorizedException,
-} from '@nestjs/common';
-import { User } from './user.entity';
+import { HttpStatus, Injectable } from '@nestjs/common';
+import { User, Role } from './user.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { CreateUserDto, ReadUserDTO, UpdateUserDto } from './dto/User.dto';
+import { CreateUserDto, UpdateUserDto } from './User.dto';
+import { BusinessException } from 'src/core/exception.model';
 
 @Injectable()
 export class UserService {
@@ -15,45 +12,59 @@ export class UserService {
     private readonly userRepository: Repository<User>,
   ) {}
 
-  async findUserByEmail(email: string): Promise<User | null> {
+  // --- CRUD ---
+  async getUserById(id: string): Promise<User> {
+    try {
+      const existingUser = await this.userRepository.findOneBy({ id });
+      if (!existingUser) {
+        throw new BusinessException('User not found', HttpStatus.NOT_FOUND, `User with ID ${id} not found`);
+      }
+      return existingUser;
+    } catch (error) {
+      if (error instanceof BusinessException) throw error;
+      throw new BusinessException('Database error', HttpStatus.INTERNAL_SERVER_ERROR, (error as Error).message);
+    }
+  }
+  async createUser(user: CreateUserDto): Promise<User> {
+    const existing = await this.userRepository.findOneBy({ email: user.email });
+    if (existing) {
+      throw new BusinessException('Error in user data', HttpStatus.CONFLICT, 'User already exists');
+    }
+
+    const newUser = this.userRepository.create({
+      ...user,
+      role: Role.USER,
+    });
+
+    try {
+      return await this.userRepository.save(newUser);
+    } catch (error) {
+      throw new BusinessException('Internal Server Error', HttpStatus.INTERNAL_SERVER_ERROR, (error as Error).message);
+    }
+  }
+
+  async updateUser(id: string, updateDto: UpdateUserDto): Promise<User> {
+    const user = await this.getUserById(id);
+    this.userRepository.merge(user, updateDto);
+
+    try {
+      return await this.userRepository.save(user);
+    } catch (error) {
+      throw new BusinessException('Update failed', HttpStatus.INTERNAL_SERVER_ERROR, (error as Error).message);
+    }
+  }
+
+  // --- Inner functions ---
+  async findRawUserByEmail(email: string): Promise<User | null> {
     const user = await this.userRepository.findOne({
-    where: { email },
-    select: ['id', 'email', 'password', 'firstName', 'lastName', 'role'], 
+      where: { email },
+      select: ['id', 'email', 'password', 'firstName', 'lastName', 'role'],
     });
     return user;
   }
 
-  async findUserById(id: number): Promise<ReadUserDTO | null> {
+  async findRawUserById(id: string): Promise<User | null> {
     const existingUser = await this.userRepository.findOneBy({ id });
-    return new ReadUserDTO(existingUser);
-  }
-
-  async createUser(user: CreateUserDto): Promise<void> {
-    const email = user.email;
-    const existingUser = await this.userRepository.findOneBy({ email });
-    if (existingUser) {
-      throw new UnauthorizedException('user already exist');
-    }
-
-    const savedUser = this.userRepository.create({ ...user, role: 'User' });
-    await this.userRepository.save(savedUser);
-  }
-
-  async updateUser(id: number, userDto: UpdateUserDto): Promise<void> {
-    const existUser = await this.userRepository.findOneBy({ id });
-    if (!existUser) {
-      throw new NotFoundException('User not found');
-    }
-    this.userRepository.merge(existUser, userDto);
-
-    await this.userRepository.save(existUser);
-  }
-
-  async deleteUser(id: number): Promise<void> {
-    const existUser = await this.userRepository.findOneBy({ id });
-    if (!existUser) {
-      throw new NotFoundException('User not found');
-    }
-    await this.userRepository.save(existUser);
+    return existingUser;
   }
 }

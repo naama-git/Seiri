@@ -31,10 +31,7 @@ export const winstonConfig: WinstonModuleOptions = {
       datePattern: 'YYYY-MM-DD',
       level: 'error',
       maxFiles: '30d',
-      format: winston.format.combine(
-        winston.format.timestamp(),
-        winston.format.json(),
-      ),
+      format: winston.format.combine(winston.format.timestamp(), winston.format.json()),
     }),
 
     new winston.transports.DailyRotateFile({
@@ -42,10 +39,7 @@ export const winstonConfig: WinstonModuleOptions = {
       filename: 'logs/combined-%DATE%.log',
       datePattern: 'YYYY-MM-DD',
       maxFiles: '14d',
-      format: winston.format.combine(
-        winston.format.timestamp(),
-        winston.format.json(),
-      ),
+      format: winston.format.combine(winston.format.timestamp(), winston.format.json()),
     }),
   ],
 };

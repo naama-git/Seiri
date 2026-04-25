@@ -1,25 +1,64 @@
-import { OmitType, PartialType } from '@nestjs/swagger';
-import { IsEmail, Length, MaxLength } from 'class-validator';
-import { FileSystemItem } from './file-system-item.entity';
-import { ReadUserDTO } from 'src/user/dto/User.dto';
+import { Expose, Type } from 'class-transformer';
+import { IsEnum, IsNotEmpty, IsOptional, IsString, IsUUID, MaxLength } from 'class-validator';
+import { ReadUserDto } from '@/user/User.dto';
+import { ItemType } from './file-system-item.entity';
+import { PartialType, PickType } from '@nestjs/swagger';
+import { ReadFileDto } from '@/file/file.dto';
 
-export class CreateFileSystemItemDto {
-    name:string;
-    type: 'file' | 'folder';
+export class ReadItemDTO {
+  @Expose()
+  @IsUUID()
+  @IsNotEmpty()
+  id!: string;
+
+  @Expose()
+  @IsString()
+  @IsNotEmpty()
+  @MaxLength(255)
+  name!: string;
+
+  @IsEnum(ItemType)
+  @IsNotEmpty()
+  type!: ItemType;
+
+  @Expose()
+  @IsNotEmpty()
+  @Type(() => ReadUserDto)
+  owner!: ReadUserDto;
+
+  @Expose()
+  @IsNotEmpty()
+  @Type(() => ReadItemDTO)
+  parent: ReadItemDTO | undefined;
+
+  @Expose()
+  children: ReadItemDTO[] = [];
+
+  @Expose()
+  ai_tags: any;
+
+  @Expose()
+  created_at!: Date;
+
+  @Expose()
+  @Type(() => ReadFileDto)
+  metadata?: ReadFileDto;
 }
 
-export class ReadFileSystemItemDto extends OmitType(CreateFileSystemItemDto, []) {
-    id:string;
-    owner: ReadUserDTO;
-    parent: ReadFileSystemItemDto | null;
-    children: ReadFileSystemItemDto[] | null;
-    ai_tags:any|null;
-    created_at: Date;
-    metadata: any; // This can be further defined based on the structure of FileMetadata
+export class CreateItemDto extends PickType(ReadItemDTO, ['name', 'type'] as const) {
+  @IsUUID()
+  parentId: string | undefined;
 }
 
-export class UpdatePlainFileSystemItemDto extends PartialType(CreateFileSystemItemDto) {}
+export class UpdateItemDTO extends PartialType(PickType(ReadItemDTO, ['name'] as const)) {}
 
-export class UpdateItemLocationDto extends PartialType(CreateFileSystemItemDto) {
-    parentId: string | null; // Allow moving to root by setting parentId to null
+export class MoveItemDTO {
+  @IsOptional()
+  @IsUUID()
+  newParentId!: string;
+}
+
+export class CopyItemDTO {
+  @IsUUID()
+  newParentId!: string;
 }

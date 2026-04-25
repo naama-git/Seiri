@@ -26,10 +26,10 @@ export enum ItemType {
 @Tree('materialized-path')
 export class FileSystemItem {
   @PrimaryGeneratedColumn('uuid')
-  id: number;
+  id!: string;
 
-  @Column({ nullable: false })
-  name: string;
+  @Column({ nullable: false, length: 255 })
+  name!: string;
 
   @Column({
     nullable: false,
@@ -37,31 +37,35 @@ export class FileSystemItem {
     enum: ItemType,
     default: ItemType.FILE,
   })
-  type: ItemType;
+  type!: ItemType;
 
   @Column({ type: 'jsonb', nullable: true, default: {} })
   ai_tags: any;
 
-  @ManyToOne(() => User, (user) => user.items)
+  @ManyToOne(() => User, (user) => user.items, { nullable: false })
   @JoinColumn({ name: 'owner_id' })
-  owner: User;
+  owner!: User;
 
-  @TreeParent()
+  @TreeParent({ onDelete: 'CASCADE' })
   @JoinColumn({ name: 'parent_id' })
-  parent: FileSystemItem;
+  parent?: FileSystemItem | null;
 
   @TreeChildren()
-  children: FileSystemItem[];
+  children!: FileSystemItem[];
 
-  @OneToOne(() => FileMetadata, (metadata) => metadata.item, { cascade: true })
-  metadata: FileMetadata;
+  @OneToOne(() => FileMetadata, (metadata) => metadata.item, {
+    nullable: true,
+    cascade: true,
+    onDelete: 'CASCADE',
+  })
+  metadata?: FileMetadata | null;
 
   @CreateDateColumn()
-  created_at: Date;
+  created_at!: Date;
 
   @UpdateDateColumn()
-  updated_at: Date;
+  updated_at!: Date;
 
   @DeleteDateColumn()
-  deleted_at: Date;
+  deleted_at?: Date | null;
 }

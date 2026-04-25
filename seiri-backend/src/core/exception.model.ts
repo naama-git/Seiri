@@ -5,9 +5,14 @@ export class BusinessException extends HttpException {
     message: string | string[],
     status: HttpStatus,
     public readonly detailedMessage?: string,
-    public readonly func?: string,
-    public readonly location?: string,
   ) {
-    super({ message, detailedMessage, func, location }, status);
+    super({ message, detailedMessage }, status);
   }
+}
+
+export interface PostgreError extends Error {
+  driverError: {
+    code: string;
+    detail: string;
+  };
 }

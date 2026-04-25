@@ -3,14 +3,10 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { APP_FILTER, APP_GUARD, APP_PIPE } from '@nestjs/core';
 import { WinstonModule } from 'nest-winston';
-
 import databaseConfig from './core/database.config';
 import corsConfig from './core/cors.config';
 import { winstonConfig } from './core/winston.config';
 import { GlobalExceptionFilter } from './core/global-exception.filter';
-// import { FileSystemItemModule } from './file-system-item/file-system-item.module';
-// import { AuthModule } from './auth/auth.module';
-// import { FileModule } from './file/file.module';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import throttlerConfig from './core/throttler.config';
@@ -19,6 +15,8 @@ import appConfig from './core/app.config';
 import { TerminusModule } from '@nestjs/terminus/dist/terminus.module';
 import { HealthController } from './core/health.controller';
 import { AuthModule } from './auth/auth.module';
+import { FileSystemItemModule } from './file-system-item/file-system-item.module';
+import { DatabaseExceptionFilter } from './core/database-exception.filter';
 
 @Module({
   imports: [
@@ -30,15 +28,14 @@ import { AuthModule } from './auth/auth.module';
     WinstonModule.forRoot(winstonConfig),
     ThrottlerModule.forRootAsync({
       inject: [ConfigService],
-      useFactory: (configService: ConfigService) =>
-        configService.get('throttler')!,
+      useFactory: (configService: ConfigService) => configService.get('throttler')!,
     }),
     TypeOrmModule.forRootAsync({
       inject: [ConfigService],
-      useFactory: (configService: ConfigService) =>
-        configService.get('database')!,
+      useFactory: (configService: ConfigService) => configService.get('database')!,
     }),
     AuthModule,
+    FileSystemItemModule,
   ],
   controllers: [AppController, HealthController],
   providers: [
@@ -46,6 +43,10 @@ import { AuthModule } from './auth/auth.module';
     {
       provide: APP_FILTER,
       useClass: GlobalExceptionFilter,
+    },
+    {
+      provide: APP_FILTER,
+      useClass: DatabaseExceptionFilter,
     },
     {
       provide: APP_PIPE,

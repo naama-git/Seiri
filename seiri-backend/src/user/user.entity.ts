@@ -10,36 +10,48 @@ import {
   CreateDateColumn,
 } from 'typeorm';
 
+export enum Role {
+  // eslint-disable-next-line @typescript-eslint/naming-convention
+  USER = 'user',
+  // eslint-disable-next-line @typescript-eslint/naming-convention
+  ADMIN = 'admin',
+}
+
 @Entity('users')
 export class User {
   @PrimaryGeneratedColumn('uuid')
-  id: number;
+  id!: string;
 
-  @Column({ nullable: false, length: 100, name:'first_name' })
-  firstName: string;
+  @Column({ nullable: false, length: 100, name: 'first_name' })
+  firstName!: string;
 
-  @Column({ nullable: false, length: 100, name:'last_name' })
-  lastName: string;
+  @Column({ nullable: false, length: 100, name: 'last_name' })
+  lastName!: string;
 
   @Column({ nullable: false, length: 255, select: false })
-  password: string;
+  password!: string;
 
   @Column({ nullable: false, unique: true })
-  email: string;
+  email!: string;
 
-  @Column({ nullable: false })
-  role: 'Admin' | 'User';
+  @Column({
+    nullable: false,
+    type: 'enum',
+    enum: Role,
+    default: Role.USER,
+  })
+  role!: Role;
 
   @OneToOne(() => FileSystemItem, { cascade: true })
   @JoinColumn({ name: 'root_folder_id' })
-  rootFolder: FileSystemItem;
+  rootFolder!: FileSystemItem;
 
   @OneToMany(() => FileSystemItem, (item) => item.owner)
-  items: FileSystemItem[];
+  items!: FileSystemItem[];
 
   @CreateDateColumn()
-  created_at: Date;
+  created_at!: Date;
 
   @DeleteDateColumn()
-  deleted_at: Date;
+  deleted_at!: Date;
 }
