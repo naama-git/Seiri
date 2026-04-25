@@ -101,6 +101,14 @@ export class FileSystemItemService {
     return savedClone;
   }
 
+  private async getFolderChildren(item: FileSystemItem): Promise<FileSystemItem[]> {
+    if (item.type !== ItemType.FOLDER) {
+      return [];
+    }
+    const tree = await this.itemRepository.findDescendantsTree(item, { depth: 1 });
+    return tree.children ?? [];
+  }
+
   // ────── Public API ──────
 
   // ---- create ----
